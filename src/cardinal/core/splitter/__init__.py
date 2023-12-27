@@ -1,0 +1,1 @@
+from cardinal.core.splitter.text_splitter import ChineseTextSplitter
