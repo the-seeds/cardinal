@@ -1,6 +1,6 @@
 import os
 
-from cardinal.core.utils.import_utils import is_tiktoken_available
+from ..utils.import_utils import is_tiktoken_available
 
 if is_tiktoken_available():
     import tiktoken

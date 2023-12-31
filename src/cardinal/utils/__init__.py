@@ -1,1 +1,6 @@
-from cardinal.utils.builder import build_database
+from .builder import build_database
+
+
+__all__ = [
+    "build_database"
+]

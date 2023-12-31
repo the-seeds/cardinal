@@ -4,7 +4,7 @@ import pickle
 from redis import Redis
 from typing import TypeVar
 
-from cardinal.core.schema import StringKeyedStorage
+from ..schema import StringKeyedStorage
 
 
 V = TypeVar("V")

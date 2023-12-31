@@ -1,10 +1,10 @@
 from typing import TYPE_CHECKING, List, Optional
 
-from cardinal.core.schema import Leaf, Retriever
+from ..schema import Leaf, Retriever
 
 if TYPE_CHECKING:
-    from cardinal.core.models import EmbedOpenAI
-    from cardinal.core.schema import LeafIndex, StringKeyedStorage, VectorStore
+    from ..model import EmbedOpenAI
+    from ..schema import LeafIndex, StringKeyedStorage, VectorStore
 
 
 class BaseRetriever(Retriever[Leaf]):
@@ -26,25 +26,25 @@ class BaseRetriever(Retriever[Leaf]):
         condition: Optional[str] = None
     ) -> List[Leaf]:
         embedding = self._vectorizer.batch_embed([query])[0]
-        ranked_leaves: List["Leaf"] = []
-        for example, score in self._vectorstore.search(
+        leaf_ids: List["LeafIndex"] = []
+        for example, _ in self._vectorstore.search(
             embedding=embedding,
             top_k=top_k,
             condition=condition
         ):
-            ranked_leaves.append((example.leaf_id, score))
-        
-        results = []
+            leaf_ids.append(example.leaf_id)
+
+        results: List["Leaf"] = []
         for i in range(top_k):
-            results.append(self._storage.query(ranked_leaves[i].leaf_id))
+            results.append(self._storage.query(leaf_ids[i]))
         return results
 
 
 if __name__ == "__main__":
-    from cardinal.core.models import EmbedOpenAI
-    from cardinal.core.schema import LeafIndex
-    from cardinal.core.storage import RedisStorage
-    from cardinal.core.vectorstore import Milvus
+    from ..model import EmbedOpenAI
+    from ..schema import LeafIndex
+    from ..storage import RedisStorage
+    from ..vectorstore import Milvus
 
     retriever = BaseRetriever(
         vectorizer=EmbedOpenAI(),

@@ -1,1 +1,6 @@
-from cardinal.app.basic_qa import BasicQA
+from .kbqa import KBQA
+
+
+__all__ = [
+    "KBQA"
+]

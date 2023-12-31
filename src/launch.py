@@ -7,7 +7,7 @@ from cardinal import build_database, launch_app
 try:
     import platform
     if platform.system() != "Windows":
-        import readline
+        import readline # noqa: F401
 except ImportError:
     print("Install `readline` for a better experience.")
 

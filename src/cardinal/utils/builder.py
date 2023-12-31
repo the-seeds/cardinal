@@ -1,10 +1,10 @@
 from pathlib import Path
 
-from cardinal.core.extractor import BaseExtractor
-from cardinal.core.models import EmbedOpenAI
-from cardinal.core.schema import LeafIndex, Leaf
-from cardinal.core.storage import RedisStorage
-from cardinal.core.vectorstore import Milvus
+from ..core.extractor import BaseExtractor
+from ..core.model import EmbedOpenAI
+from ..core.schema import LeafIndex, Leaf
+from ..core.storage import RedisStorage
+from ..core.vectorstore import Milvus
 
 
 def build_database(folder: Path) -> None:
@@ -18,4 +18,4 @@ def build_database(folder: Path) -> None:
         storage=RedisStorage[Leaf](name="default"),
         vectorstore=Milvus[LeafIndex](name="default")
     )
-    extractor.load(input_files, user_id="admin")
+    extractor.load(input_files)

@@ -6,8 +6,8 @@ from collections import defaultdict
 from typing import List, Optional, Tuple, TypeVar
 from typing_extensions import Self
 
-from cardinal.core.schema.vectorstore import VectorStore
-from cardinal.core.utils.import_utils import is_pymilvus_availble
+from ..schema import VectorStore
+from ..utils.import_utils import is_pymilvus_availble
 
 if is_pymilvus_availble():
     from pymilvus import (

@@ -1,11 +1,11 @@
 .PHONY: quality style
 
-check_dirs := src
+check_dirs := src tests
 
 quality:
-    black --check $(check_dirs)
-    ruff $(check_dirs)
+	black --check $(check_dirs)
+	ruff $(check_dirs)
 
 style:
-    black $(check_dirs)
-    ruff $(check_dirs) --fix
+	black $(check_dirs)
+	ruff $(check_dirs) --fix

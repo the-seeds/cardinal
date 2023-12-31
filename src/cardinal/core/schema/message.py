@@ -1,6 +1,14 @@
+from enum import Enum
 from pydantic import BaseModel
 from typing import Any, Dict
 from typing_extensions import Literal
+
+
+class Role(str, Enum):
+    USER = "user"
+    ASSISTANT = "assistant"
+    SYSTEM = "system"
+    FUNCTION = "function"
 
 
 class BaseMessage(BaseModel):
@@ -9,20 +17,20 @@ class BaseMessage(BaseModel):
 
 
 class SystemMessage(BaseMessage):
-    role: Literal["system"] = "system"
+    role: Literal[Role.SYSTEM] = Role.SYSTEM
 
 
 class HumanMessage(BaseMessage):
-    role: Literal["user"] = "user"
+    role: Literal[Role.USER] = Role.USER
 
 
 class AssistantMessage(BaseMessage):
-    role: Literal["assistant"] = "assistant"
+    role: Literal[Role.ASSISTANT] = Role.ASSISTANT
 
 
 class FunctionAvailable(BaseModel):
     function: Dict[str, Any]
-    type: Literal["function"] = "function"
+    type: Literal[Role.FUNCTION] = Role.FUNCTION
 
 
 class FunctionCall(BaseModel):

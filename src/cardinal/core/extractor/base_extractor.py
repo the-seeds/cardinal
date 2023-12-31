@@ -1,12 +1,13 @@
+import os
 from pathlib import Path
-from typing import TYPE_CHECKING, List
+from typing import TYPE_CHECKING, List, Optional
 
-from cardinal.core.schema import Extractor, Leaf
-from cardinal.core.splitter import ChineseTextSplitter
+from cardinal.core.schema import Extractor, Leaf, LeafIndex
+from cardinal.core.splitter import CJKTextSplitter
 
 if TYPE_CHECKING:
-    from cardinal.core.models import EmbedOpenAI
-    from cardinal.core.schema import LeafIndex, Leaf, StringKeyedStorage, VectorStore
+    from cardinal.core.model import EmbedOpenAI
+    from cardinal.core.schema import StringKeyedStorage, VectorStore
 
 
 class BaseExtractor(Extractor):
@@ -20,12 +21,12 @@ class BaseExtractor(Extractor):
         self._vectorizer = vectorizer
         self._storage = storage
         self._vectorstore = vectorstore
-        self._splitter = ChineseTextSplitter()
+        self._splitter = CJKTextSplitter()
 
     def load(
         self,
         doc_files: List[Path],
-        user_id: str
+        user_id: Optional[str] = os.environ.get("ADMIN_USER_ID")
     ) -> None:
         raw_docs: List[str] = []
         for doc_file in doc_files:
@@ -44,7 +45,22 @@ class BaseExtractor(Extractor):
             leaf_index = LeafIndex(user_id=user_id)
             leaf = Leaf(content=content, leaf_id=leaf_index.leaf_id, user_id=user_id)
             self._storage.insert(leaf.leaf_id, leaf)
-            leaf_indexes.append((content, leaf_index))
+            leaf_indexes.append(leaf_index)
 
         embeddings = self._vectorizer.batch_embed(text_chunks)
         self._vectorstore.insert(embeddings, leaf_indexes)
+
+
+if __name__ == "__main__":
+    from ..model import EmbedOpenAI
+    from ..storage import RedisStorage
+    from ..vectorstore import Milvus
+
+    extractor = BaseExtractor(
+        vectorizer=EmbedOpenAI(),
+        storage=RedisStorage[Leaf]("test"),
+        vectorstore=Milvus[LeafIndex]("test")
+    )
+    extractor.load(
+        doc_files=[Path("test1.txt"), Path("test2.txt")]
+    )

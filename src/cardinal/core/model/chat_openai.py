@@ -4,7 +4,7 @@ from openai import OpenAI
 from tenacity import retry, stop_after_attempt, wait_random_exponential
 from typing import TYPE_CHECKING, Any, Dict, Generator, List, Optional, Union
 
-from cardinal.core.schema import BaseMessage, FunctionAvailable, FunctionCall
+from ..schema import Role, BaseMessage, SystemMessage, FunctionAvailable, FunctionCall
 
 if TYPE_CHECKING:
     from openai import Stream
@@ -30,6 +30,9 @@ class ChatOpenAI:
         stream: Optional[bool] = False,
         tools: Optional[List[FunctionAvailable]] = None
     ) -> Union["ChatCompletion", "Stream[ChatCompletionChunk]"]:
+        if messages[0].role != Role.SYSTEM and os.environ.get("DEFAULT_SYSTEM_PROMPT"):
+            messages.insert(0, SystemMessage(content=os.environ.get("DEFAULT_SYSTEM_PROMPT")))
+
         request_kwargs = {
             "messages": self._parse_messages(messages),
             "model": self.model,
@@ -65,7 +68,7 @@ class ChatOpenAI:
 
 
 if __name__ == "__main__":
-    from cardinal.core.schema import HumanMessage
+    from ..schema import HumanMessage
     chat_openai = ChatOpenAI()
     messages = [HumanMessage(content="Say this is a test")]
     print(chat_openai.chat(messages))

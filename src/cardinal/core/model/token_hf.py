@@ -1,6 +1,6 @@
 import os
 
-from cardinal.core.utils.import_utils import is_transformers_available
+from ..utils.import_utils import is_transformers_available
 
 if is_transformers_available():
     from transformers import AutoTokenizer

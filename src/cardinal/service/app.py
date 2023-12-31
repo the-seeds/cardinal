@@ -4,8 +4,8 @@ from fastapi import FastAPI, status
 from fastapi.middleware.cors import CORSMiddleware
 from sse_starlette import EventSourceResponse
 
-from cardinal.app import BasicQA
-from cardinal.server.protocol import (
+from ..app import KBQA
+from .protocol import (
     ChatCompletionRequest,
     ChatCompletionResponse
 )
@@ -13,7 +13,7 @@ from cardinal.server.protocol import (
 
 def launch_app():
     app = FastAPI()
-    basic_qa = BasicQA()
+    kbqa = KBQA()
 
     app.add_middleware(
         CORSMiddleware,
@@ -24,9 +24,9 @@ def launch_app():
     )
 
     @app.post("/chat", response_model=ChatCompletionResponse, status_code=status.HTTP_200_OK)
-    async def ask_policy_mentor(request: ChatCompletionRequest):
+    async def kbqa_chat(request: ChatCompletionRequest):
         def predict():
-            for new_token in basic_qa(messages=request.messages):
+            for new_token in kbqa(messages=request.messages):
                 chunk = ChatCompletionResponse(content=new_token)
                 yield json.dumps(chunk.model_dump(exclude_unset=True), ensure_ascii=False)
 

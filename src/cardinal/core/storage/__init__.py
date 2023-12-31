@@ -1,1 +1,6 @@
-from cardinal.core.storage.redis import RedisStorage
+from .redis import RedisStorage
+
+
+__all__ = [
+    "RedisStorage"
+]

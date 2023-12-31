@@ -2,7 +2,7 @@ import time
 from pydantic import BaseModel, Field
 from typing import List, Optional
 
-from cardinal.core.schema import BaseMessage
+from ..core.schema import BaseMessage
 
 
 class ChatCompletionRequest(BaseModel):

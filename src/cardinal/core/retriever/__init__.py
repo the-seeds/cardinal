@@ -1,1 +1,6 @@
-from cardinal.core.retriever.base_retriever import BaseRetriever
+from .base_retriever import BaseRetriever
+
+
+__all__ = [
+    "BaseRetriever"
+]

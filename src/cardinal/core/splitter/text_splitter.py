@@ -2,28 +2,28 @@ import os
 import re
 from typing import List
 
-from cardinal.core.logging import get_logger
-from cardinal.core.models import TokenHuggingFace, TokenOpenAI
+from ..logging import get_logger
+from ..model import TokenHuggingFace, TokenOpenAI
 
 
 logger = get_logger(__name__)
 
 
-class RecursiveCharacterTextSplitter:
+class TextSplitter:
     r"""
     Modified from:
     https://github.com/langchain-ai/langchain/blob/v0.0.352/libs/langchain/langchain/text_splitter.py
     """
 
     def __init__(self) -> None:
-        self._separators = ["\n\n", "\n", " ", ""]
-        self._chunk_size = os.environ.get("CHUNK_SIZE")
-        self._chunk_overlap = os.environ.get("CHUNK_OVERLAP")
+        self._separators = ["\n\n", "\n", ". ", ", ", " ", ""]
+        self._chunk_size = int(os.environ.get("CHUNK_SIZE"))
+        self._chunk_overlap = int(os.environ.get("CHUNK_OVERLAP"))
         assert self._chunk_overlap < self._chunk_size, "chunk overlap must be larger than chunk size"
         if os.environ.get("TOKENIZER_PATH"):
-            self._tokenizer = TokenHuggingFace()
+            self._count = TokenHuggingFace().num_tokens
         else:
-            self._tokenizer = TokenOpenAI()
+            self._count = TokenOpenAI().num_tokens
 
     @staticmethod
     def _split_text(text: str, separator: str) -> List[str]:
@@ -35,39 +35,25 @@ class RecursiveCharacterTextSplitter:
         return separator.join(docs).strip()
 
     def _merge(self, splits: List[str], separator: str) -> List[str]:
-        separator_len = self._tokenizer.num_tokens(separator)
         merged_docs = []
         inprocess_docs = []
-        total_length = 0
         for split in splits:
-            split_length = self._tokenizer.num_tokens(split)
-            if (
-                total_length + split_length + (separator_len if len(inprocess_docs) > 0 else 0)
-                > self._chunk_size
-            ):
-                if total_length > self._chunk_size:
-                    logger.warning("Created a chunk of size {} > {}".format(total_length, self._chunk_size))
+            text = self._join_docs(inprocess_docs, separator)
+            if self._count(text + split) > self._chunk_size:
+                if self._count(text) > self._chunk_size:
+                    logger.warning("Created a chunk of size {} > {}".format(self._count(text), self._chunk_size))
 
                 if len(inprocess_docs) > 0:
-                    text = self._join_docs(inprocess_docs, separator)
-                    if text:
-                        merged_docs.append(text)
+                    merged_docs.append(text)
 
-                    while total_length > self._chunk_overlap or (
-                        total_length + split + (separator_len if len(inprocess_docs) > 0 else 0)
-                        > self._chunk_size
-                        and total_length > 0
-                    ):
-                        discard_doc = inprocess_docs.pop(0)
-                        total_length -= self._tokenizer.num_tokens(discard_doc) + (
-                            separator_len if len(inprocess_docs) > 1 else 0
-                        )
+                    while self._count(text) > self._chunk_overlap:
+                        inprocess_docs.pop(0)
+                        text = self._join_docs(inprocess_docs, separator)
 
             inprocess_docs.append(split)
-            total_length += split_length + (separator_len if len(inprocess_docs) > 1 else 0)
 
-        text = self._join_docs(inprocess_docs, separator)
-        if text is not None:
+        if len(inprocess_docs) > 0:
+            text = self._join_docs(inprocess_docs, separator)
             merged_docs.append(text)
 
         return merged_docs
@@ -83,7 +69,7 @@ class RecursiveCharacterTextSplitter:
         final_chunks = []
         good_splits = []
         for split in splits:
-            if self._tokenizer.num_tokens(split) < self._chunk_size:
+            if self._count(split) < self._chunk_size:
                 good_splits.append(split)
             else:
                 if good_splits:
@@ -101,20 +87,20 @@ class RecursiveCharacterTextSplitter:
         return final_chunks
 
 
-class ChineseTextSplitter(RecursiveCharacterTextSplitter):
+class CJKTextSplitter(TextSplitter):
 
     def split(self, text: str) -> List[str]:
         text = re.sub(r"\n{3,}", r"\n", text)
         text = re.sub(r" {3,}", r" ", text)
-        text = re.sub(r"([。！？；])([^’”])", r"\1\n\2", text)  # split with chinese stops
-        text = re.sub(r"(\…{2})([^’”])", r"\1\n\2", text)  # split with chinese ellipsis
+        text = re.sub(r"([。！？；])([^’”])", r"\1\n\2", text)  # split with CJK stops
+        text = re.sub(r"(\…{2})([^’”])", r"\1\n\2", text)  # split with CJK ellipsis
         text = re.sub(r"([。！？；][’”]{0,2})([^，。！？；])", r"\1\n\2", text)
         text = text.rstrip()
         return super().split(text)
 
 
 if __name__ == "__main__":
-    splitter = ChineseTextSplitter()
+    splitter = CJKTextSplitter()
     text = (
         "The document presents FastEdit, a repository aimed at efficiently injecting "
         "fresh and customized knowledge into large language models using a single command. "

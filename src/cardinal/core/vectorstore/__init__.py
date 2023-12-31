@@ -1,1 +1,6 @@
-from cardinal.core.vectorstore.milvus import Milvus
+from .milvus import Milvus
+
+
+__all__ = [
+    "Milvus"
+]
