@@ -7,7 +7,6 @@ V = TypeVar("V")
 
 
 class Storage(Generic[K, V], ABC):
-
     name = None
     database = None
 

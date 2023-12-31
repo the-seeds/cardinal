@@ -1,23 +1,18 @@
-import os
 import base64
+import os
 import pickle
-from pydantic import BaseModel
 from collections import defaultdict
 from typing import List, Optional, Tuple, TypeVar
+
+from pydantic import BaseModel
 from typing_extensions import Self
 
 from ..schema import VectorStore
 from ..utils.import_utils import is_pymilvus_availble
 
+
 if is_pymilvus_availble():
-    from pymilvus import (
-        connections,
-        Collection,
-        CollectionSchema,
-        DataType,
-        FieldSchema,
-        utility
-    )
+    from pymilvus import Collection, CollectionSchema, DataType, FieldSchema, connections, utility
     from pymilvus.orm.types import infer_dtype_bydata
 
 
@@ -26,7 +21,6 @@ V = TypeVar("V", bound=BaseModel)
 
 
 class Milvus(VectorStore[V]):
-
     def __init__(self, name: str) -> None:
         self.name = name
         self.store: Optional[Collection] = None
@@ -42,16 +36,14 @@ class Milvus(VectorStore[V]):
     def _check_connection(self) -> None:
         if not connections.has_connection(self._alias):
             connections.connect(
-                alias=self._alias,
-                uri=os.environ.get("MILVUS_URI"),
-                token=os.environ.get("MILVUS_TOKEN")
+                alias=self._alias, uri=os.environ.get("MILVUS_URI"), token=os.environ.get("MILVUS_TOKEN")
             )
 
     def _create_collection(self, embedding: K, example: V) -> None:
         fields = [
             FieldSchema(name=self._primary_field, dtype=DataType.INT64, is_primary=True, auto_id=True),
             FieldSchema(name=self._embedding_field, dtype=DataType.FLOAT_VECTOR, dim=len(embedding)),
-            FieldSchema(name=self._data_field, dtype=DataType.VARCHAR, max_length=2048)
+            FieldSchema(name=self._data_field, dtype=DataType.VARCHAR, max_length=2048),
         ]
 
         for key, value in example.model_dump().items():
@@ -94,13 +86,7 @@ class Milvus(VectorStore[V]):
             self.store.load()
 
     @classmethod
-    def create(
-        cls,
-        name: str,
-        embeddings: List[K],
-        data: List[V],
-        drop_old: Optional[bool] = False
-    ) -> Self:
+    def create(cls, name: str, embeddings: List[K], data: List[V], drop_old: Optional[bool] = False) -> Self:
         milvus = cls(name=name)
         milvus._init()
 
@@ -111,11 +97,7 @@ class Milvus(VectorStore[V]):
         milvus.insert(embeddings, data)
         return milvus
 
-    def insert(
-        self,
-        embeddings: List[K],
-        data: List[V]
-    ) -> None:
+    def insert(self, embeddings: List[K], data: List[V]) -> None:
         if self.store is None:
             self._init(embedding=embeddings[0], example=data[0])
 
@@ -128,15 +110,10 @@ class Milvus(VectorStore[V]):
 
         total_count = len(insert_dict[self._embedding_field])
         for i in range(0, total_count, self._batch_size):
-            insert_list = [insert_dict[field][i:i+self._batch_size] for field in self._fields]
+            insert_list = [insert_dict[field][i : i + self._batch_size] for field in self._fields]
             self.store.insert(insert_list)
 
-    def search(
-        self,
-        embedding: K,
-        top_k: Optional[int] = 4,
-        condition: Optional[str] = None
-    ) -> List[Tuple[V, float]]:
+    def search(self, embedding: K, top_k: Optional[int] = 4, condition: Optional[str] = None) -> List[Tuple[V, float]]:
         if self.store is None:
             self._init()
 
@@ -149,7 +126,7 @@ class Milvus(VectorStore[V]):
             param=self._search_params,
             limit=top_k,
             expr=condition,
-            output_fields=[self._data_field]
+            output_fields=[self._data_field],
         )
 
         ret = []
@@ -160,6 +137,7 @@ class Milvus(VectorStore[V]):
 
 
 if __name__ == "__main__":
+
     class Person(BaseModel):
         name: str
         age: int
@@ -167,5 +145,5 @@ if __name__ == "__main__":
     embeddings = [[0.1, 0.5, 0.2], [0.7, 0.1, 0.6]]
     data = [Person(name="alice", age=10), Person(name="bob", age=20)]
     milvus = Milvus[Person].create(name="test", embeddings=embeddings, data=data, drop_old=True)
-    milvus.store.load() # load into cache
+    milvus.store.load()  # load into cache
     print(milvus.search([0.9, 0.2, 0.7]))

@@ -4,9 +4,4 @@ from .token_hf import TokenHuggingFace
 from .token_openai import TokenOpenAI
 
 
-__all__ = [
-    "ChatOpenAI",
-    "EmbedOpenAI",
-    "TokenHuggingFace",
-    "TokenOpenAI"
-]
+__all__ = ["ChatOpenAI", "EmbedOpenAI", "TokenHuggingFace", "TokenOpenAI"]

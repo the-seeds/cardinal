@@ -1,6 +1,4 @@
 from .redis import RedisStorage
 
 
-__all__ = [
-    "RedisStorage"
-]
+__all__ = ["RedisStorage"]

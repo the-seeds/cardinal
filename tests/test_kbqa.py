@@ -1,13 +1,16 @@
-import os
 import json
+import os
+from typing import Dict, Generator, List
+
 import click
 import requests
-from typing import Dict, Generator, List
+
 
 try:
     import platform
+
     if platform.system() != "Windows":
-        import readline # noqa: F401
+        import readline  # noqa: F401
 except ImportError:
     print("Install `readline` for a better experience.")
 

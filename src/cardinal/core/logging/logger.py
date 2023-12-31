@@ -1,5 +1,5 @@
-import sys
 import logging
+import sys
 
 
 def get_logger(name: str) -> logging.Logger:
@@ -7,8 +7,7 @@ def get_logger(name: str) -> logging.Logger:
     Gets a standard logger with a stream hander to stdout.
     """
     formatter = logging.Formatter(
-        fmt="%(asctime)s - %(levelname)s - %(name)s - %(message)s",
-        datefmt="%m/%d/%Y %H:%M:%S"
+        fmt="%(asctime)s - %(levelname)s - %(name)s - %(message)s", datefmt="%m/%d/%Y %H:%M:%S"
     )
     handler = logging.StreamHandler(sys.stdout)
     handler.setFormatter(formatter)

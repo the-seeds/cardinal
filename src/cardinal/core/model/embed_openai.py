@@ -1,11 +1,11 @@
 import os
+from typing import List, Optional
+
 from openai import OpenAI
 from tenacity import retry, stop_after_attempt, wait_random_exponential
-from typing import List, Optional
 
 
 class EmbedOpenAI:
-
     def __init__(self, batch_size: Optional[int] = 1000) -> None:
         self.model = os.environ.get("EMBED_MODEL")
         self.batch_size = batch_size

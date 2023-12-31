@@ -2,16 +2,14 @@ import os
 
 from ..utils.import_utils import is_tiktoken_available
 
+
 if is_tiktoken_available():
     import tiktoken
 
 
 class TokenOpenAI:
-
     def __init__(self) -> None:
-        self._encoding = tiktoken.encoding_for_model(
-            os.environ.get("CHAT_MODEL")
-        )
+        self._encoding = tiktoken.encoding_for_model(os.environ.get("CHAT_MODEL"))
 
     def num_tokens(self, text: str) -> int:
         return len(self._encoding.encode(text))

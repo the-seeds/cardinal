@@ -5,29 +5,22 @@ from typing import TYPE_CHECKING, List, Optional
 from cardinal.core.schema import Extractor, Leaf, LeafIndex
 from cardinal.core.splitter import CJKTextSplitter
 
+
 if TYPE_CHECKING:
     from cardinal.core.model import EmbedOpenAI
     from cardinal.core.schema import StringKeyedStorage, VectorStore
 
 
 class BaseExtractor(Extractor):
-
     def __init__(
-        self,
-        vectorizer: "EmbedOpenAI",
-        storage: "StringKeyedStorage[Leaf]",
-        vectorstore: "VectorStore[LeafIndex]"
+        self, vectorizer: "EmbedOpenAI", storage: "StringKeyedStorage[Leaf]", vectorstore: "VectorStore[LeafIndex]"
     ) -> None:
         self._vectorizer = vectorizer
         self._storage = storage
         self._vectorstore = vectorstore
         self._splitter = CJKTextSplitter()
 
-    def load(
-        self,
-        doc_files: List[Path],
-        user_id: Optional[str] = os.environ.get("ADMIN_USER_ID")
-    ) -> None:
+    def load(self, doc_files: List[Path], user_id: Optional[str] = os.environ.get("ADMIN_USER_ID")) -> None:
         raw_docs: List[str] = []
         for doc_file in doc_files:
             if doc_file.suffix == ".txt":
@@ -57,10 +50,6 @@ if __name__ == "__main__":
     from ..vectorstore import Milvus
 
     extractor = BaseExtractor(
-        vectorizer=EmbedOpenAI(),
-        storage=RedisStorage[Leaf]("test"),
-        vectorstore=Milvus[LeafIndex]("test")
+        vectorizer=EmbedOpenAI(), storage=RedisStorage[Leaf]("test"), vectorstore=Milvus[LeafIndex]("test")
     )
-    extractor.load(
-        doc_files=[Path("test1.txt"), Path("test2.txt")]
-    )
+    extractor.load(doc_files=[Path("test1.txt"), Path("test2.txt")])

@@ -2,7 +2,7 @@ from pathlib import Path
 
 from ..core.extractor import BaseExtractor
 from ..core.model import EmbedOpenAI
-from ..core.schema import LeafIndex, Leaf
+from ..core.schema import Leaf, LeafIndex
 from ..core.storage import RedisStorage
 from ..core.vectorstore import Milvus
 
@@ -16,6 +16,6 @@ def build_database(folder: Path) -> None:
     extractor = BaseExtractor(
         vectorizer=EmbedOpenAI(),
         storage=RedisStorage[Leaf](name="default"),
-        vectorstore=Milvus[LeafIndex](name="default")
+        vectorstore=Milvus[LeafIndex](name="default"),
     )
     extractor.load(input_files)

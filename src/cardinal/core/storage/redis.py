@@ -1,8 +1,9 @@
 import os
-import redis
 import pickle
-from redis import Redis
 from typing import TypeVar
+
+import redis
+from redis import Redis
 
 from ..schema import StringKeyedStorage
 
@@ -11,12 +12,9 @@ V = TypeVar("V")
 
 
 class RedisStorage(StringKeyedStorage[V]):
-
     def __init__(self, name: str) -> None:
         self.name = name
-        self.database = Redis.from_url(
-            url=os.environ.get("REDIS_URI")
-        )
+        self.database = Redis.from_url(url=os.environ.get("REDIS_URI"))
 
         try:
             self.database.ping()

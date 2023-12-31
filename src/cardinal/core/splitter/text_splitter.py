@@ -59,10 +59,10 @@ class TextSplitter:
         return merged_docs
 
     def split(self, text: str) -> List[str]:
-        return self._split(text, self._separators) # deepcopy
+        return self._split(text, self._separators)
 
     def _split(self, text: str, separators: List[str]) -> List[str]:
-        separators = [sep for sep in separators]
+        separators = separators[:]  #  deepcopy
         separator = separators.pop(0)
 
         splits = self._split_text(text, separator)
@@ -88,7 +88,6 @@ class TextSplitter:
 
 
 class CJKTextSplitter(TextSplitter):
-
     def split(self, text: str) -> List[str]:
         text = re.sub(r"\n{3,}", r"\n", text)
         text = re.sub(r" {3,}", r" ", text)

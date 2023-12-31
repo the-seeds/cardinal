@@ -1,6 +1,4 @@
 from .kbqa import KBQA
 
 
-__all__ = [
-    "KBQA"
-]
+__all__ = ["KBQA"]

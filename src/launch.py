@@ -1,13 +1,16 @@
 import enum
-import click
 from pathlib import Path
+
+import click
 
 from cardinal import build_database, launch_app
 
+
 try:
     import platform
+
     if platform.system() != "Windows":
-        import readline # noqa: F401
+        import readline  # noqa: F401
 except ImportError:
     print("Install `readline` for a better experience.")
 

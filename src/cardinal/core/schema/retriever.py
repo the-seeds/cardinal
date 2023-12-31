@@ -6,14 +6,8 @@ V = TypeVar("V")
 
 
 class Retriever(Generic[V], ABC):
-
     @abstractmethod
-    def retrieve(
-        self,
-        query: str,
-        top_k: Optional[int] = 4,
-        condition: Optional[str] = None
-    ) -> List[V]:
+    def retrieve(self, query: str, top_k: Optional[int] = 4, condition: Optional[str] = None) -> List[V]:
         r"""
         Performs a search on a query and returns results.
 

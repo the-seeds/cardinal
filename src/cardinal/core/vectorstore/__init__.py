@@ -1,6 +1,4 @@
 from .milvus import Milvus
 
 
-__all__ = [
-    "Milvus"
-]
+__all__ = ["Milvus"]
