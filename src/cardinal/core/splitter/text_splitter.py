@@ -52,9 +52,12 @@ class TextSplitter:
                 if len(inprocess_docs) > 0:
                     merged_docs.append(text)
 
-                    while self._count(text) > self._chunk_overlap:
-                        inprocess_docs.pop(0)
-                        text = self._join_docs(inprocess_docs, separator)
+                    if self._chunk_overlap == 0:
+                        inprocess_docs = []
+                    else:
+                        while self._count(text) > self._chunk_overlap:
+                            inprocess_docs.pop(0)
+                            text = self._join_docs(inprocess_docs, separator)
 
             inprocess_docs.append(split)
 

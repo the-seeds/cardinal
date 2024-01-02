@@ -27,6 +27,7 @@ TEMPERATURE=0.95
 # text splitter
 CHUNK_SIZE=200
 CHUNK_OVERLAP=30
+NUM_CPU_CORE=16
 
 # storages
 CHROMA_PATH=./chroma

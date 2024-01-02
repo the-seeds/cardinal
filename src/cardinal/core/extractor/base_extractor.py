@@ -1,3 +1,5 @@
+import os
+from multiprocessing import Pool
 from pathlib import Path
 from typing import TYPE_CHECKING, List
 
@@ -31,8 +33,9 @@ class BaseExtractor(Extractor):
                 raise NotImplementedError
 
         text_chunks = []
-        for content in tqdm(file_contents, desc="Split content"):
-            text_chunks.extend(self._splitter.split(content))
+        with Pool(processes=int(os.environ.get("NUM_CPU_CORE"))) as pool:
+            for chunks in tqdm(pool.imap_unordered(self._splitter.split, file_contents), total=len(file_contents)):
+                text_chunks.extend(chunks)
 
         leaf_indexes = []
         for chunk in tqdm(text_chunks, desc="Build index"):
