@@ -3,10 +3,9 @@ from typing import TYPE_CHECKING, Generator, List
 
 from ..core.model import ChatOpenAI, EmbedOpenAI
 from ..core.retriever import BaseRetriever
-from ..core.schema import Leaf, LeafIndex
+from ..core.schema import Leaf, LeafIndex, Template
 from ..core.storage import RedisStorage
 from ..core.vectorstore import Milvus
-from ..template.kbqa import KBQA_TEMPLATE, PLAIN_TEMPLATE
 
 
 if TYPE_CHECKING:
@@ -22,16 +21,21 @@ class KBQA:
             vectorstore=Milvus[LeafIndex](name="default"),
             threshold=float(os.environ.get("KBQA_THRESHOLD")),
         )
-        self._plain_template = PLAIN_TEMPLATE
-        self._kbqa_template = KBQA_TEMPLATE
+        self._plain_template = Template(os.environ.get("PLAIN_TEMPLATE"))
+        self._kbqa_template = Template(os.environ.get("KBQA_TEMPLATE"))
 
     def __call__(self, messages: List["BaseMessage"]) -> Generator[str, None, None]:
         question = messages[-1].content
-        documents = self._retriever.retrieve(query=question, top_k=2)
+        if os.environ.get("EMBED_INSTRUCTION"):
+            query = os.environ.get("EMBED_INSTRUCTION") + question
+        else:
+            query = question
+
+        documents = self._retriever.retrieve(query, top_k=2)
         if len(documents):
-            context = "\n".join(documents)
-            question = self._kbqa_template.apply(context=context, question=question)
+            question = self._kbqa_template.apply(context="\n".join(documents), question=question)
         else:
             question = self._plain_template.apply(question=question)
+
         messages[-1].content = question
         yield from self._chat_model.stream_chat(messages=messages)

@@ -1,14 +1,13 @@
-import os
 from pathlib import Path
-from typing import TYPE_CHECKING, List, Optional
+from typing import TYPE_CHECKING, List
 
-from cardinal.core.schema import Extractor, Leaf, LeafIndex
-from cardinal.core.splitter import CJKTextSplitter
+from ..schema import Extractor, Leaf, LeafIndex
+from ..splitter import CJKTextSplitter
 
 
 if TYPE_CHECKING:
-    from cardinal.core.model import EmbedOpenAI
-    from cardinal.core.schema import StringKeyedStorage, VectorStore
+    from ..model import EmbedOpenAI
+    from ..schema import StringKeyedStorage, VectorStore
 
 
 class BaseExtractor(Extractor):
@@ -20,7 +19,7 @@ class BaseExtractor(Extractor):
         self._vectorstore = vectorstore
         self._splitter = CJKTextSplitter()
 
-    def load(self, doc_files: List[Path], user_id: Optional[str] = os.environ.get("ADMIN_USER_ID")) -> None:
+    def load(self, doc_files: List[Path], user_id: str) -> None:
         raw_docs: List[str] = []
         for doc_file in doc_files:
             if doc_file.suffix == ".txt":

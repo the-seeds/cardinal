@@ -1,4 +1,5 @@
-from .milvus import Milvus
+from .chroma import Chroma, ChromaCondition
+from .milvus import Milvus, MilvusCondition
 
 
-__all__ = ["Milvus"]
+__all__ = ["Chroma", "ChromaCondition", "Milvus", "MilvusCondition"]

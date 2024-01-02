@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
-from typing import Generic, List, Optional, Tuple, TypeVar
+from enum import IntEnum, unique
+from typing import Any, Generic, List, Optional, Tuple, TypeVar
 
 from pydantic import BaseModel
 from typing_extensions import Self
@@ -7,6 +8,29 @@ from typing_extensions import Self
 
 K = List[float]
 V = TypeVar("V", bound=BaseModel)
+
+
+@unique
+class Operator(IntEnum):
+    Eq = 0
+    Ne = 1
+    Gt = 2
+    Ge = 3
+    Lt = 4
+    Le = 5
+    NOT = 6
+    AND = 7
+    OR = 8
+
+
+class Condition(ABC):
+    @abstractmethod
+    def __init__(self, key: str, value: Any, op: Operator) -> None:
+        ...
+
+    @abstractmethod
+    def to_filter(self) -> Any:
+        ...
 
 
 class VectorStore(Generic[V], ABC):
@@ -25,12 +49,12 @@ class VectorStore(Generic[V], ABC):
 
     @classmethod
     @abstractmethod
-    def create(cls, store_name: str, embeddings: List[K], data: List[V], drop_old: Optional[bool] = False) -> Self:
+    def create(cls, name: str, embeddings: List[K], data: List[V], drop_old: Optional[bool] = False) -> Self:
         r"""
         Creates a vector store with data and embeddings.
 
         Args:
-            store_name: the name of the vector store.
+            name: the name of the vector store.
             embeddings: the embedding vectors of the texts.
             data: the data dict of the texts.
             drop_old: whether to drop existing vector store.
@@ -49,7 +73,17 @@ class VectorStore(Generic[V], ABC):
         ...
 
     @abstractmethod
-    def search(self, embedding: K, top_k: Optional[int] = 4, condition: Optional[str] = None) -> List[Tuple[V, float]]:
+    def delete(self, condition: Condition) -> None:
+        r"""
+        Deletes data according to the conditional expression.
+
+        Args:
+            condition: the conditional expression.
+        """
+        ...
+
+    @abstractmethod
+    def search(self, embedding: K, top_k: Optional[int] = 4, condition: Optional[Condition] = None) -> List[Tuple[V, float]]:
         r"""
         Performs a search on an embedding and returns results with score (in L2 distance).
 

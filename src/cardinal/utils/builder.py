@@ -1,3 +1,4 @@
+import os
 from pathlib import Path
 
 from ..core.extractor import BaseExtractor
@@ -18,4 +19,4 @@ def build_database(folder: Path) -> None:
         storage=RedisStorage[Leaf](name="default"),
         vectorstore=Milvus[LeafIndex](name="default"),
     )
-    extractor.load(input_files)
+    extractor.load(input_files, user_id=os.environ.get("ADMIN_USER_ID"))

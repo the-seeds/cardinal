@@ -24,7 +24,7 @@ def launch_app():
                 chunk = ChatCompletionResponse(content=new_token)
                 yield json.dumps(chunk.model_dump(exclude_unset=True), ensure_ascii=False)
 
-            yield json.dumps(ChatCompletionResponse().model_dump(exclude_unset=True), ensure_ascii=False)
+            yield "[DONE]"
 
         return EventSourceResponse(predict(), media_type="text/event-stream")
 

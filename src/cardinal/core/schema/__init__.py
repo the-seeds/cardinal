@@ -1,8 +1,7 @@
-from cardinal.core.schema.retriever import Retriever
-from cardinal.core.schema.storage import Storage, StringKeyedStorage
-from cardinal.core.schema.template import Function, Template
-from cardinal.core.schema.vectorstore import VectorStore
-
+from .retriever import Retriever
+from .storage import Storage, StringKeyedStorage
+from .template import Function, Template
+from .vectorstore import VectorStore, Operator, Condition
 from .extractor import Extractor
 from .leaf import Leaf, LeafIndex
 from .message import AssistantMessage, BaseMessage, FunctionAvailable, FunctionCall, HumanMessage, Role, SystemMessage
@@ -25,4 +24,6 @@ __all__ = [
     "Function",
     "Template",
     "VectorStore",
+    "Operator",
+    "Condition"
 ]

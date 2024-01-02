@@ -13,12 +13,16 @@ def _get_package_version(name: str) -> str:
         return "0.0.0"
 
 
-def is_tiktoken_available():
-    return _is_package_available("tiktoken")
+def is_chroma_available():
+    return _is_package_available("chromadb")
 
 
 def is_pymilvus_availble():
     return _is_package_available("pymilvus")
+
+
+def is_tiktoken_available():
+    return _is_package_available("tiktoken")
 
 
 def is_transformers_available():

@@ -2,12 +2,12 @@ import base64
 import os
 import pickle
 from collections import defaultdict
-from typing import List, Optional, Tuple, TypeVar
+from typing import Any, List, Optional, Tuple, TypeVar
 
 from pydantic import BaseModel
 from typing_extensions import Self
 
-from ..schema import VectorStore
+from ..schema import VectorStore, Condition, Operator
 from ..utils.import_utils import is_pymilvus_availble
 
 
@@ -18,6 +18,26 @@ if is_pymilvus_availble():
 
 K = List[float]
 V = TypeVar("V", bound=BaseModel)
+
+
+class MilvusCondition(Condition):
+    def __init__(self, key: str, value: Any, op: Operator) -> None:
+        self._key = key
+        if isinstance(value, str):
+            self._value = "\"{}\"".format(value)
+        elif isinstance(value, (int, float)):
+            self._value = value
+        else:
+            raise ValueError("Only supports string, int or float.")
+
+        _ops = ["==", "!=", ">", ">=", "<", "<="]
+        if op < len(_ops):
+            self._op = _ops[op]
+        else:
+            raise NotImplementedError
+
+    def to_filter(self) -> str:
+        return " ".join((self._key, self._op, self._value))
 
 
 class Milvus(VectorStore[V]):
@@ -113,7 +133,10 @@ class Milvus(VectorStore[V]):
             insert_list = [insert_dict[field][i : i + self._batch_size] for field in self._fields]
             self.store.insert(insert_list)
 
-    def search(self, embedding: K, top_k: Optional[int] = 4, condition: Optional[str] = None) -> List[Tuple[V, float]]:
+    def delete(self, condition: MilvusCondition) -> None:
+        self.store.delete(condition.to_filter())
+
+    def search(self, embedding: K, top_k: Optional[int] = 4, condition: Optional[MilvusCondition] = None) -> List[Tuple[V, float]]:
         if self.store is None:
             self._init()
 
@@ -125,7 +148,7 @@ class Milvus(VectorStore[V]):
             anns_field=self._embedding_field,
             param=self._search_params,
             limit=top_k,
-            expr=condition,
+            expr=condition.to_filter() if condition is not None else None,
             output_fields=[self._data_field],
         )
 
@@ -142,8 +165,10 @@ if __name__ == "__main__":
         name: str
         age: int
 
-    embeddings = [[0.1, 0.5, 0.2], [0.7, 0.1, 0.6]]
-    data = [Person(name="alice", age=10), Person(name="bob", age=20)]
+    embeddings = [[0.1, 0.5, 0.2], [0.7, 0.1, 0.6], [0.9, 0.2, 0.7]]
+    data = [Person(name="alice", age=10), Person(name="bob", age=20), Person(name="jack", age=50)]
     milvus = Milvus[Person].create(name="test", embeddings=embeddings, data=data, drop_old=True)
+    milvus.store.load()  # load into cache
+    milvus.delete(MilvusCondition(key="name", value="jack", op=Operator.Eq))
     milvus.store.load()  # load into cache
     print(milvus.search([0.9, 0.2, 0.7]))
