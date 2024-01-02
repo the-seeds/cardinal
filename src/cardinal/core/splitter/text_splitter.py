@@ -21,9 +21,9 @@ class TextSplitter:
         self._chunk_overlap = int(os.environ.get("CHUNK_OVERLAP"))
         assert self._chunk_overlap < self._chunk_size, "chunk overlap must be larger than chunk size"
         if os.environ.get("TOKENIZER_PATH"):
-            self._count = TokenHuggingFace().num_tokens
+            self._counter = TokenHuggingFace()
         else:
-            self._count = TokenOpenAI().num_tokens
+            self._counter = TokenOpenAI()
 
     @staticmethod
     def _split_text(text: str, separator: str) -> List[str]:
@@ -34,13 +34,19 @@ class TextSplitter:
     def _join_docs(docs: List[str], separator: str) -> str:
         return separator.join(docs).strip()
 
+    def _count(self, text: str) -> int:
+        if len(text) > self._chunk_size * 10:  # ~ compress rate, handle long text
+            return len(text)
+        else:
+            return self._counter.num_tokens(text)
+
     def _merge(self, splits: List[str], separator: str) -> List[str]:
         merged_docs = []
         inprocess_docs = []
         for split in splits:
             text = self._join_docs(inprocess_docs, separator)
             if self._count(text + split) > self._chunk_size:
-                if self._count(text) > self._chunk_size + 50:  # suppress warning num
+                if self._count(text) > self._chunk_size + 50:  # avoid too many warnings
                     logger.warning("Created a chunk of size {} > {}".format(self._count(text), self._chunk_size))
 
                 if len(inprocess_docs) > 0:
