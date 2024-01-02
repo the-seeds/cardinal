@@ -19,4 +19,4 @@ def build_database(folder: Path) -> None:
         storage=RedisStorage[Leaf](name="default"),
         vectorstore=Chroma[LeafIndex](name="default"),
     )
-    extractor.load(input_files, user_id=os.environ.get("ADMIN_USER_ID"))
+    extractor.load(input_files, user_id=os.environ.get("ADMIN_USER_ID"), verbose=True)
