@@ -1,6 +1,8 @@
 from pathlib import Path
 from typing import TYPE_CHECKING, List
 
+from tqdm import tqdm
+
 from ..schema import Extractor, Leaf, LeafIndex
 from ..splitter import CJKTextSplitter
 
@@ -21,7 +23,7 @@ class BaseExtractor(Extractor):
 
     def load(self, input_files: List[Path], user_id: str) -> None:
         file_contents: List[str] = []
-        for file_path in input_files:
+        for file_path in tqdm(input_files, desc="Extract content"):
             if file_path.suffix == ".txt":
                 with open(file_path, "r", encoding="utf-8") as f:
                     file_contents.append(f.read())
@@ -29,11 +31,11 @@ class BaseExtractor(Extractor):
                 raise NotImplementedError
 
         text_chunks = []
-        for content in file_contents:
+        for content in tqdm(file_contents, desc="Split content"):
             text_chunks.extend(self._splitter.split(content))
 
         leaf_indexes = []
-        for chunk in text_chunks:
+        for chunk in tqdm(text_chunks, desc="Build index"):
             leaf_index = LeafIndex(user_id=user_id)
             leaf = Leaf(content=chunk, leaf_id=leaf_index.leaf_id, user_id=user_id)
             self._storage.insert(leaf.leaf_id, leaf)
