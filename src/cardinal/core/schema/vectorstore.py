@@ -83,7 +83,9 @@ class VectorStore(Generic[V], ABC):
         ...
 
     @abstractmethod
-    def search(self, embedding: K, top_k: Optional[int] = 4, condition: Optional[Condition] = None) -> List[Tuple[V, float]]:
+    def search(
+        self, embedding: K, top_k: Optional[int] = 4, condition: Optional[Condition] = None
+    ) -> List[Tuple[V, float]]:
         r"""
         Performs a search on an embedding and returns results with score (in L2 distance).
 

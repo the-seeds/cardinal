@@ -7,7 +7,7 @@ from typing import Any, List, Optional, Tuple, TypeVar
 from pydantic import BaseModel
 from typing_extensions import Self
 
-from ..schema import VectorStore, Condition, Operator
+from ..schema import Condition, Operator, VectorStore
 from ..utils.import_utils import is_pymilvus_availble
 
 
@@ -24,7 +24,7 @@ class MilvusCondition(Condition):
     def __init__(self, key: str, value: Any, op: Operator) -> None:
         self._key = key
         if isinstance(value, str):
-            self._value = "\"{}\"".format(value)
+            self._value = '"{}"'.format(value)
         elif isinstance(value, (int, float)):
             self._value = value
         else:
@@ -136,7 +136,9 @@ class Milvus(VectorStore[V]):
     def delete(self, condition: MilvusCondition) -> None:
         self.store.delete(condition.to_filter())
 
-    def search(self, embedding: K, top_k: Optional[int] = 4, condition: Optional[MilvusCondition] = None) -> List[Tuple[V, float]]:
+    def search(
+        self, embedding: K, top_k: Optional[int] = 4, condition: Optional[MilvusCondition] = None
+    ) -> List[Tuple[V, float]]:
         if self.store is None:
             self._init()
 

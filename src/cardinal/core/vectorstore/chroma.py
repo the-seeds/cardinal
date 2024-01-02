@@ -7,9 +7,7 @@ from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple, TypeVar
 from pydantic import BaseModel
 from typing_extensions import Self
 
-from cardinal.core.schema.vectorstore import K, Condition
-
-from ..schema import VectorStore, Condition, Operator
+from ..schema import Condition, Operator, VectorStore
 from ..utils.import_utils import is_chroma_available
 
 
@@ -89,12 +87,14 @@ class Chroma(VectorStore[V]):
     def delete(self, condition: ChromaCondition) -> None:
         return self.store.delete(where=condition.to_filter())
 
-    def search(self, embedding: K, top_k: Optional[int] = 4, condition: Optional[ChromaCondition] = None) -> List[Tuple[V, float]]:
+    def search(
+        self, embedding: K, top_k: Optional[int] = 4, condition: Optional[ChromaCondition] = None
+    ) -> List[Tuple[V, float]]:
         result = self.store.query(
             query_embeddings=[embedding],
             n_results=top_k,
             where=condition.to_filter() if condition is not None else None,
-            include = ["metadatas", "distances"]
+            include=["metadatas", "distances"],
         )
 
         ret = []
