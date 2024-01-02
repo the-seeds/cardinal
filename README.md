@@ -1,5 +1,8 @@
 # Cardinal
 
+[![GitHub Code License](https://img.shields.io/github/license/the-seeds/cardinal)](LICENSE)
+[![PyPI](https://img.shields.io/pypi/v/pycardinal)](https://pypi.org/project/pycardinal/)
+
 ## Usage
 
 Create a `.env` file in the root directory:
