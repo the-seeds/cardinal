@@ -38,6 +38,9 @@ class ChatOpenAI:
         if tools is not None:
             request_kwargs["tools"] = self._parse_tools(tools)
 
+        if os.environ.get("TEMPERATURE"):
+            request_kwargs["temperature"] = float(os.environ.get("TEMPERATURE"))
+
         return self._client.chat.completions.create(**request_kwargs)
 
     def chat(self, messages: List[BaseMessage]) -> str:

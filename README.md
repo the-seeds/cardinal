@@ -22,6 +22,7 @@ OPENAI_API_KEY=0
 EMBED_MODEL=text-embedding-ada-002
 CHAT_MODEL=gpt-3.5-turbo-1106
 TOKENIZER_PATH=hiyouga/Qwen-14B-Chat-LLaMAfied
+TEMPERATURE=0.95
 
 # text splitter
 CHUNK_SIZE=200
