@@ -173,4 +173,4 @@ if __name__ == "__main__":
     milvus.store.load()  # load into cache
     milvus.delete(MilvusCondition(key="name", value="jack", op=Operator.Eq))
     milvus.store.load()  # load into cache
-    print(milvus.search([0.9, 0.2, 0.7]))
+    print(milvus.search([0.9, 0.2, 0.7], top_k=2))

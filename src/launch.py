@@ -1,4 +1,4 @@
-import enum
+from enum import Enum, unique
 from pathlib import Path
 
 import click
@@ -15,8 +15,8 @@ except ImportError:
     print("Install `readline` for a better experience.")
 
 
-@enum.unique
-class Action(str, enum.Enum):
+@unique
+class Action(str, Enum):
     BUILD = "build"
     LAUNCH = "launch"
 

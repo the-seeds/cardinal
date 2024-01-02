@@ -114,4 +114,4 @@ if __name__ == "__main__":
     data = [Person(name="alice", age=10), Person(name="bob", age=20), Person(name="jack", age=50)]
     chroma = Chroma[Person].create(name="test", embeddings=embeddings, data=data, drop_old=True)
     chroma.delete(ChromaCondition(key="name", value="jack", op=Operator.Eq))
-    print(chroma.search([0.9, 0.2, 0.7]))
+    print(chroma.search([0.9, 0.2, 0.7], top_k=2))

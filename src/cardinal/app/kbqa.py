@@ -5,7 +5,7 @@ from ..core.model import ChatOpenAI, EmbedOpenAI
 from ..core.retriever import BaseRetriever
 from ..core.schema import Leaf, LeafIndex, Template
 from ..core.storage import RedisStorage
-from ..core.vectorstore import Milvus
+from ..core.vectorstore import Chroma
 
 
 if TYPE_CHECKING:
@@ -18,7 +18,7 @@ class KBQA:
         self._retriever = BaseRetriever(
             vectorizer=EmbedOpenAI(),
             storage=RedisStorage[Leaf](name="default"),
-            vectorstore=Milvus[LeafIndex](name="default"),
+            vectorstore=Chroma[LeafIndex](name="default"),
             threshold=float(os.environ.get("KBQA_THRESHOLD")),
         )
         self._plain_template = Template(os.environ.get("PLAIN_TEMPLATE"))

@@ -5,7 +5,7 @@ from ..core.extractor import BaseExtractor
 from ..core.model import EmbedOpenAI
 from ..core.schema import Leaf, LeafIndex
 from ..core.storage import RedisStorage
-from ..core.vectorstore import Milvus
+from ..core.vectorstore import Chroma
 
 
 def build_database(folder: Path) -> None:
@@ -17,6 +17,6 @@ def build_database(folder: Path) -> None:
     extractor = BaseExtractor(
         vectorizer=EmbedOpenAI(),
         storage=RedisStorage[Leaf](name="default"),
-        vectorstore=Milvus[LeafIndex](name="default"),
+        vectorstore=Chroma[LeafIndex](name="default"),
     )
     extractor.load(input_files, user_id=os.environ.get("ADMIN_USER_ID"))
