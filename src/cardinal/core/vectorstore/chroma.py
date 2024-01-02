@@ -56,6 +56,8 @@ class Chroma(VectorStore[V]):
     def __init__(self, name: str) -> None:
         client = _get_chroma_client()
         self.store = client.get_or_create_collection(name, embedding_function=None)
+        self._batch_size = 1000
+        self._data_field = "data"
 
     @classmethod
     def create(cls, name: str, embeddings: List[K], data: List[V], drop_old: Optional[bool] = False) -> Self:
@@ -79,10 +81,16 @@ class Chroma(VectorStore[V]):
             for k, v in example.model_dump().items():
                 if isinstance(v, (str, int, float, bool)):
                     example_dict[k] = v
-            example_dict["data"] = base64.b64encode(pickle.dumps(example)).decode("ascii")
+            example_dict[self._data_field] = base64.b64encode(pickle.dumps(example)).decode("ascii")
             metadatas.append(example_dict)
 
-        self.store.add(ids=ids, embeddings=embeddings, metadatas=metadatas)
+        total_count = len(metadatas)
+        for i in range(0, total_count, self._batch_size):
+            self.store.add(
+                ids=ids[i : i + self._batch_size],
+                embeddings=embeddings[i : i + self._batch_size],
+                metadatas=metadatas[i : i + self._batch_size],
+            )
 
     def delete(self, condition: ChromaCondition) -> None:
         return self.store.delete(where=condition.to_filter())
@@ -99,7 +107,7 @@ class Chroma(VectorStore[V]):
 
         ret = []
         for metadata, score in zip(result["metadatas"][0], result["distances"][0]):
-            example = pickle.loads(base64.b64decode(metadata["data"]))
+            example = pickle.loads(base64.b64decode(metadata[self._data_field]))
             ret.append((example, score))
         return ret
 
