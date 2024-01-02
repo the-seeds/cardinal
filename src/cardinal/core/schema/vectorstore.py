@@ -18,9 +18,10 @@ class Operator(IntEnum):
     Ge = 3
     Lt = 4
     Le = 5
-    NOT = 6
-    AND = 7
-    OR = 8
+    In = 6
+    Notin = 7
+    And = 8
+    Or = 9
 
 
 class Condition(ABC):

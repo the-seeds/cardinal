@@ -26,19 +26,26 @@ V = TypeVar("V", bound=BaseModel)
 class ChromaCondition(Condition):
     def __init__(self, key: str, value: Any, op: Operator) -> None:
         self._key = key
-        if isinstance(value, (str, int, float)):
-            self._value = value
-        else:
-            raise ValueError("Only supports string, int or float.")
-
-        _ops = ["$eq", "$ne", "$gt", "$gte", "$lt", "$lte"]
+        _ops = ["$eq", "$ne", "$gt", "$gte", "$lt", "$lte", "$in", "$nin", "$and", "$or"]
         if op < len(_ops):
             self._op = _ops[op]
         else:
             raise NotImplementedError
 
-    def to_filter(self) -> Dict[str, Dict[str, str]]:
-        return {self._key: {self._op: self._value}}
+        if isinstance(value, list) and op in [Operator.In, Operator.Notin]:
+            self._value = value
+        elif isinstance(value, dict) and op in [Operator.And, Operator.Or]:
+            self._value = value
+        elif isinstance(value, (str, int, float)):
+            self._value = value
+        else:
+            raise ValueError("Unsupported operation {} for value {}".format(self._op, value))
+
+    def to_filter(self) -> Dict[str, Any]:
+        if self._op == "$and" or self._op == "$or":
+            return {self._op: [self._key, self._value]}
+        else:
+            return {self._key: {self._op: self._value}}
 
 
 def _get_chroma_client() -> "ClientAPI":

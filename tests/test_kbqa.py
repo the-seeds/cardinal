@@ -4,6 +4,7 @@ from typing import Dict, Generator, List
 
 import click
 import requests
+from dotenv import load_dotenv
 
 
 try:
@@ -15,22 +16,22 @@ except ImportError:
     print("Install `readline` for a better experience.")
 
 
-def get_stream_response(url: str, messages: List[Dict[str, str]]) -> Generator[str, None, None]:
+def get_stream_response(messages: List[Dict[str, str]]) -> Generator[str, None, None]:
+    url = os.path.join(os.environ.get("SERVER_URL"), "chat")
     headers = {"Content-Type": "application/json"}
     payload = {"uuid": "test", "messages": messages}
     response = requests.post(url, headers=headers, json=payload, stream=True)
     for line in response.iter_lines(decode_unicode=True):
         if line:
-            data = json.loads(line[6:])
-            if data.get("content", None) is not None:
-                yield data["content"]
-            else:
+            if line == "data: [DONE]":
                 break
+            data = json.loads(line[6:])
+            yield data["content"]
 
 
 if __name__ == "__main__":
+    load_dotenv()
     messages = []
-    base_url = click.prompt("Server Base URL", type=str)
 
     while True:
         query = click.prompt("User", type=str)
@@ -44,7 +45,7 @@ if __name__ == "__main__":
         messages.append({"role": "user", "content": query})
         answer = ""
         print("Assistant: ", end="", flush=True)
-        for new_text in get_stream_response(url=os.path.join(base_url, "chat"), messages=messages):
+        for new_text in get_stream_response(messages=messages):
             answer += new_text
             print(new_text, end="", flush=True)
         print()

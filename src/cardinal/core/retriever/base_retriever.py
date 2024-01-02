@@ -1,11 +1,15 @@
 from typing import TYPE_CHECKING, List, Optional
 
+from ..logging import get_logger
 from ..schema import Leaf, Retriever
 
 
 if TYPE_CHECKING:
     from ..model import EmbedOpenAI
     from ..schema import LeafIndex, StringKeyedStorage, VectorStore
+
+
+logger = get_logger(__name__)
 
 
 class BaseRetriever(Retriever[Leaf]):
@@ -25,6 +29,7 @@ class BaseRetriever(Retriever[Leaf]):
         embedding = self._vectorizer.batch_embed([query])[0]
         results: List[str] = []
         for example, score in self._vectorstore.search(embedding=embedding, top_k=top_k, condition=condition):
+            logger.info("Retrieved document with score {:.4f}".format(score))
             if score <= self._threshold:
                 results.append(self._storage.query(example.leaf_id).content)
 

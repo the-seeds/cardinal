@@ -11,7 +11,7 @@ Create a `.env` file in the root directory:
 ```
 
 ```
-# imitater
+# imitater or openai
 OPENAI_BASE_URL=http://192.168.0.1:8000/v1
 OPENAI_API_KEY=0
 
@@ -37,6 +37,9 @@ EMBED_INSTRUCTION=为这个句子生成表示以用于检索相关文章：
 PLAIN_TEMPLATE=你是ChatGPT，由OpenAI开发的大语言模型，针对问题作出详细和有帮助的解答。\n\n问题：{question}
 KBQA_TEMPLATE=你是ChatGPT，由OpenAI开发的大语言模型，根据已知信息，针对问题作出详细和有帮助的解答。\n\n已知信息：{context}\n\n问题：{question}
 KBQA_THRESHOLD=1.0
+
+# tests
+SERVER_URL=http://192.168.0.1:8000
 ```
 
 ## Build Database

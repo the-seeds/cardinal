@@ -23,18 +23,22 @@ V = TypeVar("V", bound=BaseModel)
 class MilvusCondition(Condition):
     def __init__(self, key: str, value: Any, op: Operator) -> None:
         self._key = key
-        if isinstance(value, str):
-            self._value = '"{}"'.format(value)
-        elif isinstance(value, (int, float)):
-            self._value = value
-        else:
-            raise ValueError("Only supports string, int or float.")
-
-        _ops = ["==", "!=", ">", ">=", "<", "<="]
+        _ops = ["==", "!=", ">", ">=", "<", "<=", "in", "not in", "&&", "||"]
         if op < len(_ops):
             self._op = _ops[op]
         else:
             raise NotImplementedError
+
+        if isinstance(value, list) and op in [Operator.In, Operator.Notin]:
+            self._value = value
+        elif isinstance(value, str) and op in [Operator.And, Operator.Or]:
+            self._value = value
+        elif isinstance(value, str):
+            self._value = '"{}"'.format(value)
+        elif isinstance(value, (int, float)):
+            self._value = value
+        else:
+            raise ValueError("Unsupported operation {} for value {}".format(self._op, value))
 
     def to_filter(self) -> str:
         return " ".join((self._key, self._op, self._value))
