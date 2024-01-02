@@ -1,18 +1,18 @@
 from typing import TYPE_CHECKING, List, Optional
 
 from ..logging import get_logger
-from ..schema import Leaf, Retriever
+from ..schema import Retriever
 
 
 if TYPE_CHECKING:
     from ..model import EmbedOpenAI
-    from ..schema import LeafIndex, StringKeyedStorage, VectorStore
+    from ..schema import Condition, Leaf, LeafIndex, StringKeyedStorage, VectorStore
 
 
 logger = get_logger(__name__)
 
 
-class BaseRetriever(Retriever[Leaf]):
+class BaseRetriever(Retriever):
     def __init__(
         self,
         vectorizer: "EmbedOpenAI",
@@ -25,7 +25,7 @@ class BaseRetriever(Retriever[Leaf]):
         self._vectorstore = vectorstore
         self._threshold = threshold
 
-    def retrieve(self, query: str, top_k: Optional[int] = 4, condition: Optional[str] = None) -> List[str]:
+    def retrieve(self, query: str, top_k: Optional[int] = 4, condition: Optional["Condition"] = None) -> List[str]:
         embedding = self._vectorizer.batch_embed([query])[0]
         results: List[str] = []
         for example, score in self._vectorstore.search(embedding=embedding, top_k=top_k, condition=condition):
@@ -38,7 +38,7 @@ class BaseRetriever(Retriever[Leaf]):
 
 if __name__ == "__main__":
     from ..model import EmbedOpenAI
-    from ..schema import LeafIndex
+    from ..schema import Leaf, LeafIndex
     from ..storage import RedisStorage
     from ..vectorstore import Milvus
 

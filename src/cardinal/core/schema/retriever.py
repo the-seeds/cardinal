@@ -1,13 +1,14 @@
 from abc import ABC, abstractmethod
-from typing import Generic, List, Optional, TypeVar
+from typing import TYPE_CHECKING, List, Optional
 
 
-V = TypeVar("V")
+if TYPE_CHECKING:
+    from .vectorstore import Condition
 
 
-class Retriever(Generic[V], ABC):
+class Retriever(ABC):
     @abstractmethod
-    def retrieve(self, query: str, top_k: Optional[int] = 4, condition: Optional[str] = None) -> List[V]:
+    def retrieve(self, query: str, top_k: Optional[int] = 4, condition: Optional["Condition"] = None) -> List[str]:
         r"""
         Performs a search on a query and returns results.
 

@@ -19,23 +19,23 @@ class BaseExtractor(Extractor):
         self._vectorstore = vectorstore
         self._splitter = CJKTextSplitter()
 
-    def load(self, doc_files: List[Path], user_id: str) -> None:
-        raw_docs: List[str] = []
-        for doc_file in doc_files:
-            if doc_file.suffix == ".txt":
-                with open(doc_file, "r", encoding="utf-8") as f:
-                    raw_docs.append(f.read())
+    def load(self, input_files: List[Path], user_id: str) -> None:
+        file_contents: List[str] = []
+        for file_path in input_files:
+            if file_path.suffix == ".txt":
+                with open(file_path, "r", encoding="utf-8") as f:
+                    file_contents.append(f.read())
             else:
                 raise NotImplementedError
 
         text_chunks = []
-        for doc in raw_docs:
-            text_chunks.extend(self._splitter.split(doc))
+        for content in file_contents:
+            text_chunks.extend(self._splitter.split(content))
 
         leaf_indexes = []
-        for content in text_chunks:
+        for chunk in text_chunks:
             leaf_index = LeafIndex(user_id=user_id)
-            leaf = Leaf(content=content, leaf_id=leaf_index.leaf_id, user_id=user_id)
+            leaf = Leaf(content=chunk, leaf_id=leaf_index.leaf_id, user_id=user_id)
             self._storage.insert(leaf.leaf_id, leaf)
             leaf_indexes.append(leaf_index)
 
@@ -51,4 +51,4 @@ if __name__ == "__main__":
     extractor = BaseExtractor(
         vectorizer=EmbedOpenAI(), storage=RedisStorage[Leaf]("test"), vectorstore=Milvus[LeafIndex]("test")
     )
-    extractor.load(doc_files=[Path("test1.txt"), Path("test2.txt")])
+    extractor.load([Path("test1.txt"), Path("test2.txt")], user_id="admin")
