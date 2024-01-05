@@ -46,7 +46,7 @@ class TextSplitter:
         for split in splits:
             text = self._join_docs(inprocess_docs, separator)
             if self._count(text + split) > self._chunk_size:
-                if self._count(text) > self._chunk_size + 50:  # avoid too many warnings
+                if self._count(text) > self._chunk_size + self._chunk_overlap:  # avoid too many warnings
                     logger.warning("Created a chunk of size {} > {}".format(self._count(text), self._chunk_size))
 
                 if len(inprocess_docs) > 0:
