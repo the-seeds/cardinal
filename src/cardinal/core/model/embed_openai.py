@@ -6,7 +6,7 @@ from tenacity import retry, stop_after_attempt, wait_random_exponential
 
 
 class EmbedOpenAI:
-    def __init__(self, batch_size: Optional[int] = 1024) -> None:
+    def __init__(self, batch_size: Optional[int] = 1000) -> None:
         self.model = os.environ.get("EMBED_MODEL")
         self.batch_size = batch_size
         self._client = OpenAI(max_retries=5, timeout=30.0)

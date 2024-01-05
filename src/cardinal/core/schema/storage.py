@@ -34,5 +34,26 @@ class Storage(Generic[K, V], ABC):
         """
         ...
 
+    @abstractmethod
+    def unique_incr(self) -> None:
+        r"""
+        Increments the value of the unique key by 1.
+        """
+        ...
+
+    @abstractmethod
+    def unique_get(self) -> int:
+        r"""
+        Gets the value of the unique key.
+        """
+        ...
+
+    @abstractmethod
+    def unique_reset(self) -> None:
+        r"""
+        Resets the value of the unique key.
+        """
+        ...
+
 
 StringKeyedStorage = Storage[str, V]

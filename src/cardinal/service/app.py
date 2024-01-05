@@ -1,4 +1,5 @@
 import json
+import os
 
 import uvicorn
 from fastapi import FastAPI, status
@@ -9,9 +10,9 @@ from ..app import KBQA
 from .protocol import ChatCompletionRequest, ChatCompletionResponse
 
 
-def launch_app():
+def launch_app(database: str) -> None:
     app = FastAPI()
-    kbqa = KBQA()
+    kbqa = KBQA(database)
 
     app.add_middleware(
         CORSMiddleware, allow_origins=["*"], allow_credentials=True, allow_methods=["*"], allow_headers=["*"]
@@ -28,4 +29,4 @@ def launch_app():
 
         return EventSourceResponse(predict(), media_type="text/event-stream")
 
-    uvicorn.run(app, host="0.0.0.0", port=8000, workers=1)
+    uvicorn.run(app, host="0.0.0.0", port=int(os.environ.get("SERVICE_PORT", 8000)), workers=1)

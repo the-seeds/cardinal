@@ -33,6 +33,8 @@ class BaseRetriever(Retriever):
             if score <= self._threshold:
                 results.append(self._storage.query(example.leaf_id).content)
 
+        logger.info(results)
+
         return results
 
 

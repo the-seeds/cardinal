@@ -1,15 +1,17 @@
 from abc import ABC, abstractmethod
 from pathlib import Path
-from typing import List
+from typing import List, Optional
 
 
 class Extractor(ABC):
     @abstractmethod
-    def load(self, documents: List[Path]) -> None:
+    def load(self, input_files: List[Path], user_id: str, verbose: Optional[bool] = False) -> None:
         r"""
-        Loads the documents into database.
+        Loads the files into database.
 
         Args:
-            documents: a list of paths to documents.
+            input_files: a list of paths to input files.
+            user_id: the user id.
+            verbose: whether or not to show the process bar.
         """
         ...

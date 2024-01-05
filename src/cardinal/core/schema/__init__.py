@@ -1,3 +1,4 @@
+from .collector import Collector
 from .extractor import Extractor
 from .leaf import Leaf, LeafIndex
 from .message import AssistantMessage, BaseMessage, FunctionAvailable, FunctionCall, HumanMessage, Role, SystemMessage
@@ -8,6 +9,7 @@ from .vectorstore import Condition, Operator, VectorStore
 
 
 __all__ = [
+    "Collector",
     "Extractor",
     "Leaf",
     "LeafIndex",
