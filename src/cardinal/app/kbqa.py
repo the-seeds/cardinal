@@ -7,6 +7,8 @@ from ..core.schema import Leaf, LeafIndex, Template
 from ..core.storage import RedisStorage
 from ..core.vectorstore import Chroma
 
+from ..core.schema import FunctionAvailable, FunctionCall
+from ..core.function_calls.functions import parse_function_availables, execute_function_calls
 
 if TYPE_CHECKING:
     from ..core.schema import BaseMessage
@@ -33,9 +35,21 @@ class KBQA:
 
         documents = self._retriever.retrieve(query, top_k=2)
         if len(documents):
-            question = self._kbqa_template.apply(context="\n".join(documents), question=question)
+            question = self._kbqa_template.apply(
+                context="\n".join(documents), question=question)
         else:
             question = self._plain_template.apply(question=question)
+
+        # parse function availables
+        question, tools = parse_function_availables(question)
+
+        # execute function calls
+        if tools:
+            function_calls = self._chat_model.function_call(
+                messages=messages, tools=tools)
+            # calling the function_calls, and get the response
+            response = execute_function_calls(function_calls)
+            yield response
 
         messages[-1].content = question
         yield from self._chat_model.stream_chat(messages=messages)
