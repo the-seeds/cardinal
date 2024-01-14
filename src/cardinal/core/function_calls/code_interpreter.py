@@ -68,19 +68,15 @@ class CodeInterpreter:
         # If no code blocks found, return original text
         return text
 
-    def code_interpreter(self, action_input_list: list, timeout=30, start_code=True):
-        code = ''
+    def code_interpreter(self, code: str, timeout=30, start_code=True):
         # convert action_input_list to code
-        for action_input in action_input_list:
-            code += (self.extract_code(action_input) + '\n')
+        code = (self.extract_code(code) + '\n')
         # add timeout
         if timeout:
             code = f'signal.alarm({timeout})\n{code}'
         # add start code
         if start_code:
             code = START_CODE + "\n" + code
-
-        print("code:\n", code)
         res_type, res = self.code_kernel.execute(code)
         return res if res_type == "image" else None
 

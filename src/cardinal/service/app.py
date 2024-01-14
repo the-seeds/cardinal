@@ -3,7 +3,7 @@ import json
 import uvicorn
 from fastapi import FastAPI, status
 from fastapi.middleware.cors import CORSMiddleware
-from sse_starlette import EventSourceResponse
+from sse_starlette import EventSourceResponse, ServerSentEvent
 
 from ..app import KBQA
 from .protocol import ChatCompletionRequest, ChatCompletionResponse
@@ -26,6 +26,7 @@ def launch_app():
 
             yield "[DONE]"
 
-        return EventSourceResponse(predict(), media_type="text/event-stream")
+        return EventSourceResponse(predict(), media_type="text/event-stream",
+                                   ping_message_factory=lambda: ServerSentEvent(**{"comment": "You can't see\\r\\nthis ping"}))
 
-    uvicorn.run(app, host="0.0.0.0", port=8000, workers=1)
+    uvicorn.run(app, host="0.0.0.0", port=8020, workers=1)

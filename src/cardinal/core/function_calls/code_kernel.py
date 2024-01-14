@@ -78,7 +78,7 @@ class CodeKernel(object):
             return shell_msg, msg_out
         except Exception as e:
             print(e)
-            return None
+            return None, None
 
     def clean_ansi_codes(self, input_string):
         ansi_escape = re.compile(r'(\x9B|\x1B\[|\u001b\[)[0-?]*[ -/]*[@-~]')
@@ -93,6 +93,8 @@ class CodeKernel(object):
         code = code.replace("<|user|>", "")
         code = code.replace("<|system|>", "")
         msg, output = self._execute(code)
+        if not msg and not output:
+            return res_type, 'no output'
 
         if msg['metadata']['status'] == "timeout":
             return res_type, 'Timed out'

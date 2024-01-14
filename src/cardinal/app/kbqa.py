@@ -8,7 +8,7 @@ from ..core.storage import RedisStorage
 from ..core.vectorstore import Chroma
 
 from ..core.schema import FunctionAvailable, FunctionCall
-from ..core.function_calls.functions import parse_function_availables, execute_function_calls
+from ..core.function_calls.functions import parse_function_availables, execute_function_call
 
 if TYPE_CHECKING:
     from ..core.schema import BaseMessage
@@ -45,10 +45,10 @@ class KBQA:
 
         # execute function calls
         if tools:
-            function_calls = self._chat_model.function_call(
+            function_call = self._chat_model.function_call(
                 messages=messages, tools=tools)
             # calling the function_calls, and get the response
-            response = execute_function_calls(function_calls)
+            response = execute_function_call(function_call)
             yield response
 
         messages[-1].content = question
