@@ -26,7 +26,10 @@ def launch_app():
 
             yield "[DONE]"
 
-        return EventSourceResponse(predict(), media_type="text/event-stream",
-                                   ping_message_factory=lambda: ServerSentEvent(**{"comment": "You can't see\\r\\nthis ping"}))
+        return EventSourceResponse(
+            predict(),
+            media_type="text/event-stream",
+            ping_message_factory=lambda: ServerSentEvent(**{"comment": "You can't see\\r\\nthis ping"}),
+        )
 
     uvicorn.run(app, host="0.0.0.0", port=8020, workers=1)

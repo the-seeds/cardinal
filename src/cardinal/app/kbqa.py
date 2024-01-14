@@ -1,14 +1,13 @@
 import os
 from typing import TYPE_CHECKING, Generator, List
 
+from ..core.function_calls.functions import execute_function_call, parse_function_availables
 from ..core.model import ChatOpenAI, EmbedOpenAI
 from ..core.retriever import BaseRetriever
 from ..core.schema import Leaf, LeafIndex, Template
 from ..core.storage import RedisStorage
 from ..core.vectorstore import Chroma
 
-from ..core.schema import FunctionAvailable, FunctionCall
-from ..core.function_calls.functions import parse_function_availables, execute_function_call
 
 if TYPE_CHECKING:
     from ..core.schema import BaseMessage
@@ -35,8 +34,7 @@ class KBQA:
 
         documents = self._retriever.retrieve(query, top_k=2)
         if len(documents):
-            question = self._kbqa_template.apply(
-                context="\n".join(documents), question=question)
+            question = self._kbqa_template.apply(context="\n".join(documents), question=question)
         else:
             question = self._plain_template.apply(question=question)
 
@@ -45,8 +43,7 @@ class KBQA:
 
         # execute function calls
         if tools:
-            function_call = self._chat_model.function_call(
-                messages=messages, tools=tools)
+            function_call = self._chat_model.function_call(messages=messages, tools=tools)
             # calling the function_calls, and get the response
             response = execute_function_call(function_call)
             yield response
