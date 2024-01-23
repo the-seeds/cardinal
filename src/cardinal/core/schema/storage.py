@@ -1,9 +1,11 @@
 from abc import ABC, abstractmethod
-from typing import Generic, List, Optional, Sequence, TypeVar
+from typing import Generic, List, Optional, Sequence, Tuple, TypeVar
+
+from pydantic import BaseModel
 
 
 K = TypeVar("K")
-V = TypeVar("V")
+V = TypeVar("V", bound=BaseModel)
 
 
 class Storage(Generic[K, V], ABC):
@@ -36,9 +38,16 @@ class Storage(Generic[K, V], ABC):
         ...
 
     @abstractmethod
-    def search(self, keyword: str, top_k: Optional[int] = 10) -> List[V]:
+    def search(self, keyword: str, top_k: Optional[int] = 10) -> List[Tuple[V, float]]:
         r"""
         Performs a search on a keyword and returns results.
+
+        Args:
+            keyword: the keyword being searched.
+            top_k: the number of results to return.
+
+        Returns:
+            hits_with_scores: the hit results with scores (larger is better).
         """
         ...
 

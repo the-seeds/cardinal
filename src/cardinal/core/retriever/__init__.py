@@ -1,4 +1,5 @@
-from .base_retriever import BaseRetriever
+from .dense_retriever import DenseRetriever
+from .sparse_retriever import SparseRetriever
 
 
-__all__ = ["BaseRetriever"]
+__all__ = ["DenseRetriever", "SparseRetriever"]

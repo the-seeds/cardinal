@@ -12,7 +12,7 @@ if TYPE_CHECKING:
 logger = get_logger(__name__)
 
 
-class BaseRetriever(Retriever):
+class DenseRetriever(Retriever):
     def __init__(
         self,
         vectorizer: "EmbedOpenAI",
@@ -44,7 +44,7 @@ if __name__ == "__main__":
     from ..storage import RedisStorage
     from ..vectorstore import Milvus
 
-    retriever = BaseRetriever(
+    retriever = DenseRetriever(
         vectorizer=EmbedOpenAI(), storage=RedisStorage[Leaf]("test"), vectorstore=Milvus[LeafIndex]("test")
     )
     print(retriever.retrieve("How to edit LLMs", top_k=1))

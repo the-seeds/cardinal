@@ -1,4 +1,7 @@
+import time
 from typing import TYPE_CHECKING, List, Optional
+
+from pydantic import BaseModel, Field
 
 from ..schema import BaseMessage, Collector
 
@@ -10,8 +13,14 @@ if TYPE_CHECKING:
 Dialog = List[BaseMessage]
 
 
+class History(BaseModel):
+    id: int
+    created: int = Field(default_factory=lambda: int(time.time()))
+    messages: Dialog
+
+
 class MsgCollector(Collector[Dialog]):
-    def __init__(self, storage: "StringKeyedStorage[Dialog]", drop_old: Optional[bool] = False) -> None:
+    def __init__(self, storage: "StringKeyedStorage[History]", drop_old: Optional[bool] = False) -> None:
         self._storage = storage
         self._prefix = "msgcollector_{}"
         if drop_old:
@@ -19,10 +28,11 @@ class MsgCollector(Collector[Dialog]):
 
     def collect(self, data: Dialog) -> None:
         num_collected = self._storage.unique_get()
-        self._storage.insert([self._prefix.format(num_collected)], [data])
+        history = History(id=num_collected, messages=data)
+        self._storage.insert([self._prefix.format(num_collected)], [history])
         self._storage.unique_incr()
 
-    def dump(self) -> List[Dialog]:
+    def dump(self) -> List[History]:
         results = []
         for i in range(self._storage.unique_get()):
             results.append(self._storage.query(self._prefix.format(i)))

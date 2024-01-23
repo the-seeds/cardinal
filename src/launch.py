@@ -3,7 +3,7 @@ from pathlib import Path
 
 import click
 
-from cardinal import build_database, launch_app, view_messages
+from cardinal import build_database, launch_app, view_history
 
 
 try:
@@ -20,6 +20,7 @@ class Action(str, Enum):
     BUILD = "build"
     LAUNCH = "launch"
     VIEW = "view"
+    EXIT = "exit"
 
 
 @click.command()
@@ -33,7 +34,7 @@ def interactive_cli(action, database):
         launch_app(database)
     elif action == Action.VIEW:
         folder = click.prompt("Output folder", type=str)
-        view_messages(Path(folder))
+        view_history(Path(folder))
 
 
 if __name__ == "__main__":

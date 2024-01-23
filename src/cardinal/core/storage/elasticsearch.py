@@ -1,6 +1,6 @@
 import base64
 import pickle
-from typing import List, Optional, Sequence, TypeVar
+from typing import List, Optional, Sequence, Tuple, TypeVar
 
 from pydantic import BaseModel
 
@@ -79,7 +79,7 @@ class ElasticsearchStorage(StringKeyedStorage[V]):
             result = self.database.get(index=self.name, id=key)
             return pickle.loads(base64.b64decode(result["_source"]["data"]))
 
-    def search(self, keyword: str, top_k: Optional[int] = 10) -> List[V]:
+    def search(self, keyword: str, top_k: Optional[int] = 10) -> List[Tuple[V, float]]:
         result = self.database.search(
             index=self.name,
             query={"match": {self._search_target: keyword}},
@@ -88,7 +88,7 @@ class ElasticsearchStorage(StringKeyedStorage[V]):
 
         ret = []
         for hit in result["hits"]["hits"]:
-            ret.append(pickle.loads(base64.b64decode(hit["_source"]["data"])))
+            ret.append((pickle.loads(base64.b64decode(hit["_source"]["data"])), hit["_score"]))
 
         return ret
 

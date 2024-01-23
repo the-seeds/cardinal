@@ -11,7 +11,6 @@ class Config:
     chat_model: str
     tokenizer_path: Optional[str]
     default_system_prompt: Optional[str]
-    temperature: float
 
     chunk_size: int
     chunk_overlap: int
@@ -34,7 +33,6 @@ settings = Config(
     chat_model=os.environ.get("CHAT_MODEL"),
     tokenizer_path=os.environ.get("TOKENIZER_PATH"),
     default_system_prompt=os.environ.get("DEFAULT_SYSTEM_PROMPT"),
-    temperature=float(os.environ.get("TEMPERATURE", 1.0)),
     chunk_size=int(os.environ.get("CHUNK_SIZE", 100)),
     chunk_overlap=int(os.environ.get("CHUNK_OVERLAP", 0)),
     num_cpu_core=int(os.environ.get("NUM_CPU_CORE", 8)),

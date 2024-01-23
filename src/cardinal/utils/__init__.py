@@ -1,5 +1,5 @@
 from .builder import build_database
-from .viewer import view_messages
+from .viewer import view_history
 
 
-__all__ = ["build_database", "view_messages"]
+__all__ = ["build_database", "view_history"]

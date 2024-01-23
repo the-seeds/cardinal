@@ -1,6 +1,8 @@
 import pickle
 from typing import List, Optional, Sequence, TypeVar
 
+from pydantic import BaseModel
+
 from ..config import settings
 from ..schema import StringKeyedStorage
 from ..utils.import_utils import is_redis_available
@@ -11,7 +13,7 @@ if is_redis_available():
     from redis import Redis
 
 
-V = TypeVar("V")
+V = TypeVar("V", bound=BaseModel)
 
 
 class RedisStorage(StringKeyedStorage[V]):
@@ -56,11 +58,16 @@ class RedisStorage(StringKeyedStorage[V]):
 
 
 if __name__ == "__main__":
-    storage = RedisStorage[str](name="test")
-    storage.insert(keys=["test_k"], values=["test_v"])
-    print(storage.query("test_k"))
+
+    class Document(BaseModel):
+        content: str
+        title: str = "test"
+
+    storage = RedisStorage[Document](name="test")
+    storage.insert(keys=["doc1", "doc2"], values=[Document(content="I am alice."), Document(content="I am bob.")])
+    print(storage.query("doc1"))
     storage.clear()
-    print(storage.query("test_k"))
+    print(storage.query("doc1"))
     storage.unique_reset()
     storage.unique_incr()
     storage.unique_incr()

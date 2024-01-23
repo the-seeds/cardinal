@@ -1,4 +1,5 @@
 from .kbqa import KbqaEngine
+from .wordgraph import WordGraphEngine
 
 
-__all__ = ["KbqaEngine"]
+__all__ = ["KbqaEngine", "WordGraphEngine"]

@@ -12,5 +12,37 @@ class ChatCompletionRequest(BaseModel):
 
 
 class ChatCompletionResponse(BaseModel):
-    created: Optional[int] = Field(default_factory=lambda: int(time.time()))
+    created: int = Field(default_factory=lambda: int(time.time()))
     content: Optional[str] = None
+
+
+class WordGraphRequest(BaseModel):
+    uuid: str
+    messages: List[BaseMessage]
+
+
+class WordGraphNode(BaseModel):
+    id: str
+    name: str
+    category: int
+    x: int
+    y: int
+
+
+class WordGraphLink(BaseModel):
+    source: str
+    target: str
+
+
+class WordGraphCategory(BaseModel):
+    name: str
+
+
+class WordGraphObject(BaseModel):
+    nodes: List[WordGraphNode]
+    links: List[WordGraphLink]
+    categories: List[WordGraphCategory]
+
+
+class WordGraphResponse(BaseModel):
+    graph: List[WordGraphObject]
