@@ -1,4 +1,4 @@
-from .kbqa import KBQA
+from .kbqa import KbqaEngine
 
 
-__all__ = ["KBQA"]
+__all__ = ["KbqaEngine"]

@@ -18,6 +18,7 @@ class BaseExtractor(Extractor):
     def __init__(
         self, vectorizer: "EmbedOpenAI", storage: "StringKeyedStorage[Leaf]", vectorstore: "VectorStore[LeafIndex]"
     ) -> None:
+        self._batch_size = 1000
         self._vectorizer = vectorizer
         self._storage = storage
         self._vectorstore = vectorstore
@@ -42,22 +43,18 @@ class BaseExtractor(Extractor):
             ):
                 text_chunks.extend(chunks)
 
-        leaf_indexes = []
-        for chunk in tqdm(text_chunks, desc="Build index", disable=(not verbose)):
-            leaf_index = LeafIndex(user_id=user_id)
-            leaf = Leaf(content=chunk, leaf_id=leaf_index.leaf_id, user_id=user_id)
-            self._storage.insert(leaf.leaf_id, leaf)
-            leaf_indexes.append(leaf_index)
-
-        text_batches = []
-        for i in range(0, len(text_chunks), self._vectorizer.batch_size):
-            text_batches.append(text_chunks[i : i + self._vectorizer.batch_size])
-
-        embeddings = []
-        for batch_text in tqdm(text_batches, desc="Get embeddings", disable=(not verbose)):
-            embeddings.extend(self._vectorizer.batch_embed(batch_text))
-
-        self._vectorstore.insert(embeddings, leaf_indexes)
+        for i in tqdm(range(0, len(text_chunks), self._batch_size), desc="Build index", disable=(not verbose)):
+            batch_text = text_chunks[i : i + self._batch_size]
+            batch_index, batch_ids, batch_content = [], [], []
+            for text in batch_text:
+                leaf_index = LeafIndex(user_id=user_id)
+                leaf = Leaf(leaf_id=leaf_index.leaf_id, user_id=user_id, content=text)
+                batch_ids.append(leaf_index.leaf_id)
+                batch_index.append(leaf_index)
+                batch_content.append(leaf)
+            embeddings = self._vectorizer.batch_embed(batch_text)
+            self._vectorstore.insert(embeddings, batch_index)
+            self._storage.insert(batch_ids, batch_content)
 
 
 if __name__ == "__main__":

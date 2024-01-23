@@ -1,31 +1,46 @@
 import os
+from dataclasses import dataclass
 from typing import Generator, List
 
+from ..core.choices import Storage, Vectorstore
 from ..core.collector import MsgCollector
+from ..core.config import Config
 from ..core.model import ChatOpenAI, EmbedOpenAI
 from ..core.retriever import BaseRetriever
 from ..core.schema import AssistantMessage, BaseMessage, HumanMessage, Leaf, LeafIndex, Template
-from ..core.storage import RedisStorage
-from ..core.vectorstore import Chroma
 
 
-class KBQA:
+@dataclass
+class KbqaConfig(Config):
+    plain_template: str
+    kbqa_template: str
+    kbqa_threshold: float
+    embed_instruction: str
+
+
+class KbqaEngine:
     def __init__(self, database: str) -> None:
+        self._settings = KbqaConfig(
+            plain_template=os.environ.get("PLAIN_TEMPLATE"),
+            kbqa_template=os.environ.get("KBQA_TEMPLATE"),
+            kbqa_threshold=float(os.environ.get("KBQA_THRESHOLD", 1.0)),
+            embed_instruction=os.environ.get("EMBED_INSTRUCTION"),
+        )
         self._chat_model = ChatOpenAI()
-        self._collector = MsgCollector(storage=RedisStorage[List[BaseMessage]](name="msg_collector"))
+        self._collector = MsgCollector(storage=Storage[List[BaseMessage]](name="msg_collector"))
         self._retriever = BaseRetriever(
             vectorizer=EmbedOpenAI(),
-            storage=RedisStorage[Leaf](name=database),
-            vectorstore=Chroma[LeafIndex](name=database),
-            threshold=float(os.environ.get("KBQA_THRESHOLD")),
+            storage=Storage[Leaf](name=database),
+            vectorstore=Vectorstore[LeafIndex](name=database),
+            threshold=self._settings.kbqa_threshold,
         )
-        self._plain_template = Template(os.environ.get("PLAIN_TEMPLATE"))
-        self._kbqa_template = Template(os.environ.get("KBQA_TEMPLATE"))
+        self._plain_template = Template(self._settings.plain_template)
+        self._kbqa_template = Template(self._settings.kbqa_template)
 
     def __call__(self, messages: List["BaseMessage"]) -> Generator[str, None, None]:
         question = messages[-1].content
-        if os.environ.get("EMBED_INSTRUCTION"):
-            query = os.environ.get("EMBED_INSTRUCTION") + question
+        if self._settings.embed_instruction:
+            query = self._settings.embed_instruction + question
         else:
             query = question
 

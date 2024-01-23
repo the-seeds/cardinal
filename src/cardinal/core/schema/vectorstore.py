@@ -1,12 +1,12 @@
 from abc import ABC, abstractmethod
 from enum import IntEnum, unique
-from typing import Any, Generic, List, Optional, Tuple, TypeVar
+from typing import Any, Generic, List, Optional, Sequence, Tuple, TypeVar
 
 from pydantic import BaseModel
 from typing_extensions import Self
 
 
-K = List[float]
+K = Sequence[float]
 V = TypeVar("V", bound=BaseModel)
 
 
@@ -26,7 +26,7 @@ class Operator(IntEnum):
 
 class Condition(ABC):
     @abstractmethod
-    def __init__(self, key: str, value: Any, op: Operator) -> None:
+    def __init__(self, key: str, value: Any, op: "Operator") -> None:
         ...
 
     @abstractmethod
@@ -50,7 +50,7 @@ class VectorStore(Generic[V], ABC):
 
     @classmethod
     @abstractmethod
-    def create(cls, name: str, embeddings: List[K], data: List[V], drop_old: Optional[bool] = False) -> Self:
+    def create(cls, name: str, embeddings: Sequence[K], data: Sequence[V], drop_old: Optional[bool] = False) -> Self:
         r"""
         Creates a vector store with data and embeddings.
 
@@ -63,7 +63,7 @@ class VectorStore(Generic[V], ABC):
         ...
 
     @abstractmethod
-    def insert(self, embeddings: List[K], data: List[V]) -> None:
+    def insert(self, embeddings: Sequence[K], data: Sequence[V]) -> None:
         r"""
         Inserts data with embeddings into the vector store.
 
@@ -74,7 +74,7 @@ class VectorStore(Generic[V], ABC):
         ...
 
     @abstractmethod
-    def delete(self, condition: Condition) -> None:
+    def delete(self, condition: "Condition") -> None:
         r"""
         Deletes data according to the conditional expression.
 
@@ -85,7 +85,7 @@ class VectorStore(Generic[V], ABC):
 
     @abstractmethod
     def search(
-        self, embedding: K, top_k: Optional[int] = 4, condition: Optional[Condition] = None
+        self, embedding: K, top_k: Optional[int] = 4, condition: Optional["Condition"] = None
     ) -> List[Tuple[V, float]]:
         r"""
         Performs a search on an embedding and returns results with score (in L2 distance).

@@ -1,12 +1,12 @@
 import base64
-import os
 import pickle
 from collections import defaultdict
-from typing import Any, List, Optional, Tuple, TypeVar
+from typing import Any, List, Optional, Sequence, Tuple, TypeVar
 
 from pydantic import BaseModel
 from typing_extensions import Self
 
+from ..config import settings
 from ..schema import Condition, Operator, VectorStore
 from ..utils.import_utils import is_pymilvus_availble
 
@@ -16,12 +16,12 @@ if is_pymilvus_availble():
     from pymilvus.orm.types import infer_dtype_bydata
 
 
-K = List[float]
+K = Sequence[float]
 V = TypeVar("V", bound=BaseModel)
 
 
 class MilvusCondition(Condition):
-    def __init__(self, key: str, value: Any, op: Operator) -> None:
+    def __init__(self, key: str, value: Any, op: "Operator") -> None:
         self._key = key
         _ops = ["==", "!=", ">", ">=", "<", "<=", "in", "not in", "&&", "||"]
         if op < len(_ops):
@@ -30,13 +30,13 @@ class MilvusCondition(Condition):
             raise NotImplementedError
 
         if isinstance(value, list) and op in [Operator.In, Operator.Notin]:
-            self._value = value
+            self._value = str(value)
         elif isinstance(value, str) and op in [Operator.And, Operator.Or]:
             self._value = value
         elif isinstance(value, str):
-            self._value = '"{}"'.format(value)
+            self._value = "'{}'".format(value)
         elif isinstance(value, (int, float)):
-            self._value = value
+            self._value = str(value)
         else:
             raise ValueError("Unsupported operation {} for value {}".format(self._op, value))
 
@@ -47,21 +47,19 @@ class MilvusCondition(Condition):
 class Milvus(VectorStore[V]):
     def __init__(self, name: str) -> None:
         self.name = name
-        self.store: Optional[Collection] = None
+        self.store: Optional["Collection"] = None
         self._fields: List[str] = []
         self._alias = "default"
         self._batch_size = 1000
-        self._primary_field = "pk"
-        self._embedding_field = "embedding"
-        self._data_field = "data"
+        self._primary_field = "_pk"
+        self._embedding_field = "_embedding"
+        self._data_field = "_data"
         self._index_params = {"metric_type": "L2", "index_type": "IVF_FLAT", "params": {"nlist": 1024}}
         self._search_params = {"metric_type": "L2", "params": {"nprobe": 10}}
 
     def _check_connection(self) -> None:
         if not connections.has_connection(self._alias):
-            connections.connect(
-                alias=self._alias, uri=os.environ.get("MILVUS_URI"), token=os.environ.get("MILVUS_TOKEN")
-            )
+            connections.connect(alias=self._alias, uri=settings.milvus_uri, token=settings.milvus_token)
 
     def _create_collection(self, embedding: K, example: V) -> None:
         fields = [
@@ -110,7 +108,7 @@ class Milvus(VectorStore[V]):
             self.store.load()
 
     @classmethod
-    def create(cls, name: str, embeddings: List[K], data: List[V], drop_old: Optional[bool] = False) -> Self:
+    def create(cls, name: str, embeddings: Sequence[K], data: Sequence[V], drop_old: Optional[bool] = False) -> Self:
         milvus = cls(name=name)
         milvus._init()
 
@@ -121,7 +119,7 @@ class Milvus(VectorStore[V]):
         milvus.insert(embeddings, data)
         return milvus
 
-    def insert(self, embeddings: List[K], data: List[V]) -> None:
+    def insert(self, embeddings: Sequence[K], data: Sequence[V]) -> None:
         if self.store is None:
             self._init(embedding=embeddings[0], example=data[0])
 
@@ -132,16 +130,15 @@ class Milvus(VectorStore[V]):
             for key, value in example.model_dump().items():
                 insert_dict[key].append(value)
 
-        total_count = len(insert_dict[self._embedding_field])
-        for i in range(0, total_count, self._batch_size):
+        for i in range(0, len(insert_dict[self._embedding_field]), self._batch_size):
             insert_list = [insert_dict[field][i : i + self._batch_size] for field in self._fields]
             self.store.insert(insert_list)
 
-    def delete(self, condition: MilvusCondition) -> None:
+    def delete(self, condition: "MilvusCondition") -> None:
         self.store.delete(condition.to_filter())
 
     def search(
-        self, embedding: K, top_k: Optional[int] = 4, condition: Optional[MilvusCondition] = None
+        self, embedding: K, top_k: Optional[int] = 4, condition: Optional["MilvusCondition"] = None
     ) -> List[Tuple[V, float]]:
         if self.store is None:
             self._init()
@@ -162,6 +159,7 @@ class Milvus(VectorStore[V]):
         for hit in result[0]:
             example = pickle.loads(base64.b64decode(hit.entity.get(self._data_field)))
             ret.append((example, hit.score))
+
         return ret
 
 
@@ -174,7 +172,7 @@ if __name__ == "__main__":
     embeddings = [[0.1, 0.5, 0.2], [0.7, 0.1, 0.6], [0.9, 0.2, 0.7]]
     data = [Person(name="alice", age=10), Person(name="bob", age=20), Person(name="jack", age=50)]
     milvus = Milvus[Person].create(name="test", embeddings=embeddings, data=data, drop_old=True)
-    milvus.store.load()  # load into cache
+    milvus.store.flush()
     milvus.delete(MilvusCondition(key="name", value="jack", op=Operator.Eq))
-    milvus.store.load()  # load into cache
+    milvus.store.flush()
     print(milvus.search([0.9, 0.2, 0.7], top_k=2))

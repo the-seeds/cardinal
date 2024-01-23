@@ -6,19 +6,19 @@ from fastapi import FastAPI, status
 from fastapi.middleware.cors import CORSMiddleware
 from sse_starlette import EventSourceResponse
 
-from ..app import KBQA
+from ..app import KbqaEngine
 from .protocol import ChatCompletionRequest, ChatCompletionResponse
 
 
 def launch_app(database: str) -> None:
     app = FastAPI()
-    kbqa = KBQA(database)
+    kbqa = KbqaEngine(database)
 
     app.add_middleware(
         CORSMiddleware, allow_origins=["*"], allow_credentials=True, allow_methods=["*"], allow_headers=["*"]
     )
 
-    @app.post("/chat", response_model=ChatCompletionResponse, status_code=status.HTTP_200_OK)
+    @app.post("/v1/chat/kbqa", response_model=ChatCompletionResponse, status_code=status.HTTP_200_OK)
     async def kbqa_chat(request: ChatCompletionRequest):
         def predict():
             for new_token in kbqa(messages=request.messages):

@@ -17,7 +17,7 @@ except ImportError:
 
 
 def get_stream_response(messages: List[Dict[str, str]]) -> Generator[str, None, None]:
-    url = os.path.join(os.environ.get("SERVER_URL"), "chat")
+    url = os.path.join(os.environ.get("SERVER_URL"), "v1", "chat", "kbqa")
     headers = {"Content-Type": "application/json"}
     payload = {"uuid": "test", "messages": messages}
     response = requests.post(url, headers=headers, json=payload, stream=True)

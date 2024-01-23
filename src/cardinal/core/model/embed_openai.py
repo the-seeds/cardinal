@@ -1,13 +1,14 @@
-import os
 from typing import List, Optional
 
 from openai import OpenAI
 from tenacity import retry, stop_after_attempt, wait_random_exponential
 
+from ..config import settings
+
 
 class EmbedOpenAI:
     def __init__(self, batch_size: Optional[int] = 1000) -> None:
-        self.model = os.environ.get("EMBED_MODEL")
+        self.model = settings.embed_model
         self.batch_size = batch_size
         self._client = OpenAI(max_retries=5, timeout=30.0)
 

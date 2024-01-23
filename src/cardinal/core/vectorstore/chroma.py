@@ -1,12 +1,12 @@
 import base64
-import os
 import pickle
 import uuid
-from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple, TypeVar
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Sequence, Tuple, TypeVar
 
 from pydantic import BaseModel
 from typing_extensions import Self
 
+from ..config import settings
 from ..schema import Condition, Operator, VectorStore
 from ..utils.import_utils import is_chroma_available
 
@@ -19,7 +19,7 @@ if is_chroma_available():
         from chromadb import ClientAPI
 
 
-K = List[float]
+K = Sequence[float]
 V = TypeVar("V", bound=BaseModel)
 
 
@@ -49,8 +49,7 @@ class ChromaCondition(Condition):
 
 
 def _get_chroma_client() -> "ClientAPI":
-    settings = Settings(is_persistent=True, persist_directory=os.environ.get("CHROMA_PATH"))
-    client = Client(settings)
+    client = Client(Settings(is_persistent=True, persist_directory=settings.chroma_path))
     try:
         client.heartbeat()
     except Exception:
@@ -64,10 +63,10 @@ class Chroma(VectorStore[V]):
         client = _get_chroma_client()
         self.store = client.get_or_create_collection(name, embedding_function=None)
         self._batch_size = 1000
-        self._data_field = "data"
+        self._data_field = "_data"
 
     @classmethod
-    def create(cls, name: str, embeddings: List[K], data: List[V], drop_old: Optional[bool] = False) -> Self:
+    def create(cls, name: str, embeddings: Sequence[K], data: Sequence[V], drop_old: Optional[bool] = False) -> Self:
         if drop_old:
             client = _get_chroma_client()
             try:
@@ -79,7 +78,7 @@ class Chroma(VectorStore[V]):
         chroma.insert(embeddings, data)
         return chroma
 
-    def insert(self, embeddings: List[K], data: List[V]) -> None:
+    def insert(self, embeddings: Sequence[K], data: Sequence[V]) -> None:
         ids = []
         metadatas = []
         for example in data:
@@ -88,11 +87,13 @@ class Chroma(VectorStore[V]):
             for k, v in example.model_dump().items():
                 if isinstance(v, (str, int, float, bool)):
                     example_dict[k] = v
+                else:
+                    raise ValueError("Expected str, int, float or bool, got {}".format(type(v)))
+
             example_dict[self._data_field] = base64.b64encode(pickle.dumps(example)).decode("ascii")
             metadatas.append(example_dict)
 
-        total_count = len(metadatas)
-        for i in range(0, total_count, self._batch_size):
+        for i in range(0, len(metadatas), self._batch_size):
             self.store.add(
                 ids=ids[i : i + self._batch_size],
                 embeddings=embeddings[i : i + self._batch_size],
@@ -100,7 +101,7 @@ class Chroma(VectorStore[V]):
             )
 
     def delete(self, condition: ChromaCondition) -> None:
-        return self.store.delete(where=condition.to_filter())
+        self.store.delete(where=condition.to_filter())
 
     def search(
         self, embedding: K, top_k: Optional[int] = 4, condition: Optional[ChromaCondition] = None

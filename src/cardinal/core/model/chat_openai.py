@@ -1,10 +1,10 @@
 import json
-import os
 from typing import TYPE_CHECKING, Any, Dict, Generator, List, Optional, Union
 
 from openai import OpenAI
 from tenacity import retry, stop_after_attempt, wait_random_exponential
 
+from ..config import settings
 from ..schema import BaseMessage, FunctionAvailable, FunctionCall, Role, SystemMessage
 
 
@@ -15,7 +15,7 @@ if TYPE_CHECKING:
 
 class ChatOpenAI:
     def __init__(self) -> None:
-        self.model = os.environ.get("CHAT_MODEL")
+        self.model = settings.chat_model
         self._client = OpenAI(max_retries=5, timeout=30.0)
 
     def _parse_messages(self, messages: List[BaseMessage]) -> List[Dict[str, str]]:
@@ -31,15 +31,15 @@ class ChatOpenAI:
         stream: Optional[bool] = False,
         tools: Optional[List[FunctionAvailable]] = None,
     ) -> Union["ChatCompletion", "Stream[ChatCompletionChunk]"]:
-        if messages[0].role != Role.SYSTEM and os.environ.get("DEFAULT_SYSTEM_PROMPT"):
-            messages.insert(0, SystemMessage(content=os.environ.get("DEFAULT_SYSTEM_PROMPT")))
+        if messages[0].role != Role.SYSTEM and settings.default_system_prompt:
+            messages.insert(0, SystemMessage(content=settings.default_system_prompt))
 
         request_kwargs = {"messages": self._parse_messages(messages), "model": self.model, "stream": stream}
         if tools is not None:
             request_kwargs["tools"] = self._parse_tools(tools)
 
-        if os.environ.get("TEMPERATURE"):
-            request_kwargs["temperature"] = float(os.environ.get("TEMPERATURE"))
+        if settings.temperature:
+            request_kwargs["temperature"] = settings.temperature
 
         return self._client.chat.completions.create(**request_kwargs)
 

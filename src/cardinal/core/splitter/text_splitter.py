@@ -1,7 +1,7 @@
-import os
 import re
 from typing import List
 
+from ..config import settings
 from ..logging import get_logger
 from ..model import TokenHuggingFace, TokenOpenAI
 
@@ -17,10 +17,10 @@ class TextSplitter:
 
     def __init__(self) -> None:
         self._separators = ["\n\n", "\n", ". ", ", ", " ", ""]
-        self._chunk_size = int(os.environ.get("CHUNK_SIZE"))
-        self._chunk_overlap = int(os.environ.get("CHUNK_OVERLAP"))
+        self._chunk_size = settings.chunk_size
+        self._chunk_overlap = settings.chunk_overlap
         assert self._chunk_overlap < self._chunk_size, "chunk overlap must be larger than chunk size"
-        if os.environ.get("TOKENIZER_PATH"):
+        if settings.tokenizer_path:
             self._counter = TokenHuggingFace()
         else:
             self._counter = TokenOpenAI()

@@ -17,8 +17,16 @@ def is_chroma_available():
     return _is_package_available("chromadb")
 
 
+def is_elasticsearch_available():
+    return _is_package_available("elasticsearch")
+
+
 def is_pymilvus_availble():
     return _is_package_available("pymilvus")
+
+
+def is_redis_available():
+    return _is_package_available("redis")
 
 
 def is_tiktoken_available():
