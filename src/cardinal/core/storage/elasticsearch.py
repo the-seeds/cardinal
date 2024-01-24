@@ -95,15 +95,11 @@ class ElasticsearchStorage(StringKeyedStorage[V]):
     def clear(self) -> None:
         if self.database.indices.exists(index=self.name):
             self.database.indices.delete(index=self.name)
-
         self._try_create_index()
 
     def unique_incr(self) -> None:
-        if self.database.exists(index=self.name, id=self._unique_key):
-            value = int(self.database.get(index=self.name, id=self._unique_key)["_source"]["data"])
-            self.database.index(index=self.name, id=self._unique_key, document={"data": str(value + 1)})
-        else:
-            self.database.index(index=self.name, id=self._unique_key, document={"data": "1"})
+        value = self.unique_get()
+        self.database.index(index=self.name, id=self._unique_key, document={"data": str(value + 1)})
 
     def unique_get(self) -> int:
         if self.database.exists(index=self.name, id=self._unique_key):

@@ -105,13 +105,13 @@ class WordGraphEngine:
             temperature=self._settings.keyword_temperature,
         )
         matches = re.findall(r"([\u4e00-\u9fd5]+)", response)
-        keywords = []
+        keywords = set()
         for match in matches:
             for word, pos in pseg.lcut(match):
                 if _is_accepted_word(word, pos):
-                    keywords.append(word)
+                    keywords.add(word)
 
-        keywords = random.sample(keywords, min(len(keywords), 3))
+        keywords = random.sample(list(keywords), min(len(keywords), 3))
         logger.info("Found keywords: {}".format(", ".join(keywords)))
         ret = []
         for keyword in keywords:
