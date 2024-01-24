@@ -117,6 +117,7 @@ class WordGraphEngine:
         for keyword in keywords:
             documents = self._retriever.retrieve(keyword, top_k=5)
             prefix_words, suffix_words = _find_connected_words(keyword, documents)
-            ret.append((keyword, prefix_words, suffix_words))
+            if len(prefix_words) or len(suffix_words):
+                ret.append((keyword, prefix_words, suffix_words))
 
         return ret
