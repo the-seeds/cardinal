@@ -54,7 +54,7 @@ def launch_app(database: str) -> None:
                         name=prefix_word,
                         category=1,
                         x=100,
-                        y=round(400 * (i - n // 2) / (n - 1) + 300),
+                        y=round(400 * i / (n - 1) + 100) if n > 1 else 300,
                     )
                 )
                 links.append(WordGraphLink(source="prefix_{}".format(i), target="keyword"))
@@ -67,7 +67,7 @@ def launch_app(database: str) -> None:
                         name=suffix_word,
                         category=2,
                         x=500,
-                        y=round(400 * (i - n // 2) / (n - 1) + 300),
+                        y=round(400 * i / (n - 1) + 100) if n > 1 else 300,
                     )
                 )
                 links.append(WordGraphLink(source="keyword", target="suffix_{}".format(i)))
