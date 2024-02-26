@@ -21,10 +21,6 @@ def is_elasticsearch_available():
     return _is_package_available("elasticsearch")
 
 
-def is_jieba_available():
-    return _is_package_available("jieba")
-
-
 def is_pymilvus_availble():
     return _is_package_available("pymilvus")
 

@@ -1,0 +1,6 @@
+chromadb
+elasticsearch[async]
+pymilvus>=2.3.0
+redis
+tiktoken
+transformers
