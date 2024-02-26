@@ -32,7 +32,7 @@ def main():
         url="https://github.com/the-seeds/cardinal",
         package_dir={"": "src"},
         packages=find_packages("src"),
-        python_requires=">=3.8.0",
+        python_requires=">=3.9.0",
         install_requires=get_requires(),
         classifiers=[
             "Development Status :: 3 - Alpha",
@@ -42,9 +42,9 @@ def main():
             "License :: OSI Approved :: Apache Software License",
             "Operating System :: OS Independent",
             "Programming Language :: Python :: 3",
-            "Programming Language :: Python :: 3.8",
             "Programming Language :: Python :: 3.9",
             "Programming Language :: Python :: 3.10",
+            "Programming Language :: Python :: 3.11",
             "Topic :: Scientific/Engineering :: Artificial Intelligence",
         ]
     )
