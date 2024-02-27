@@ -13,7 +13,7 @@ class KbqaEngine:
     def __init__(self, database: str) -> None:
         self._window_size = 6
         self._chat_model = ChatOpenAI()
-        self._collector = MsgCollector(storage_name="msg_collector")
+        self._collector = MsgCollector(storage_name=database)
         self._retriever = DenseRetriever[DocIndex](vectorstore_name=database, threshold=1.0, verbose=True)
         self._storage = AutoStorage[Document](name=database)
         self._kbqa_template = Template("充分理解以下事实描述：{context}\n\n回答下面的问题：{query}")

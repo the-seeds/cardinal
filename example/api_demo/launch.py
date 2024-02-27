@@ -39,7 +39,7 @@ def interactive_cli(action, database):
         launch_app(database)
     elif action == Action.VIEW:
         folder = click.prompt("Output folder", type=str)
-        view_history(Path(folder))
+        view_history(Path(folder), database)
 
 
 if __name__ == "__main__":

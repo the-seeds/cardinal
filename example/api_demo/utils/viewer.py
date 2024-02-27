@@ -8,8 +8,8 @@ from cardinal import MsgCollector, get_logger
 logger = get_logger(__name__)
 
 
-def view_history(folder: Path) -> None:
-    collector = MsgCollector(storage_name="msg_collector")
+def view_history(folder: Path, database: str) -> None:
+    collector = MsgCollector(storage_name=database)
     histories = [[message.model_dump() for message in messages] for messages in collector.dump()]
 
     folder.mkdir(exist_ok=True)
