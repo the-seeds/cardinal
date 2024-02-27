@@ -91,7 +91,7 @@ class Milvus(VectorStore[T]):
 
     def _init(self, embedding: Optional[Sequence[float]] = None, example: Optional[T] = None) -> None:
         # build connection
-        Milvus._check_connection(self, connections)
+        self._check_connection(connections)
 
         # check existing store
         if utility.has_collection(self.name):
@@ -99,18 +99,18 @@ class Milvus(VectorStore[T]):
 
         # create store if example is given
         if embedding is not None and example is not None and self.store is None:
-            Milvus._create_collection(self, embedding, example)
+            self._create_collection(embedding, example)
 
         # load store if exists
         if self.store is not None:
-            Milvus._extract_fields(self)
-            Milvus._create_index(self)
+            self._extract_fields()
+            self._create_index()
             self.store.load()
 
     @classmethod
     def create(cls, name: str, texts: Sequence[str], data: Sequence[T], drop_old: Optional[bool] = False) -> Self:
         milvus = cls(name=name)
-        Milvus._init(milvus)
+        milvus._init()
 
         if drop_old and milvus.store is not None:
             milvus.store.drop()
@@ -122,7 +122,7 @@ class Milvus(VectorStore[T]):
     def insert(self, texts: Sequence[str], data: Sequence[T]) -> None:
         embeddings = self._vectorizer.batch_embed(texts)
         if self.store is None:
-            Milvus._init(self, embedding=embeddings[0], example=data[0])
+            self._init(embedding=embeddings[0], example=data[0])
 
         insert_dict = defaultdict(list)
         for embedding, example in zip(embeddings, data):
@@ -142,7 +142,7 @@ class Milvus(VectorStore[T]):
         self, query: str, top_k: Optional[int] = 4, condition: Optional["MilvusCondition"] = None
     ) -> List[Tuple[T, float]]:
         if self.store is None:
-            Milvus._init(self)
+            self._init()
 
         if self.store is None:
             raise ValueError("Index {} does not exist.".format(self.name))

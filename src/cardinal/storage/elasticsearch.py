@@ -20,7 +20,7 @@ class ElasticsearchStorage(Storage[T]):
         self._unique_key = "unique_{}".format(name)
         self._batch_size = 1000
         self._search_target = settings.search_target
-        ElasticsearchStorage._try_create_index(self)
+        self._try_create_index()
 
         try:
             self.database.ping()
@@ -57,8 +57,9 @@ class ElasticsearchStorage(Storage[T]):
             actions = []
             for key, value in zip(keys[i : i + self._batch_size], values[i : i + self._batch_size]):
                 source = {"data": base64.b64encode(pickle.dumps(value)).decode("ascii")}
-                if self._search_target is not None:
-                    source[self._search_target] = value.model_dump().get(self._search_target)
+                value_dict = value.model_dump()
+                if self._search_target is not None and self._search_target in value_dict:
+                    source[self._search_target] = value_dict.get(self._search_target)
 
                 actions.append({"_index": self.name, "_id": key, "_source": source})
 
@@ -88,7 +89,7 @@ class ElasticsearchStorage(Storage[T]):
     def clear(self) -> None:
         if self.database.indices.exists(index=self.name):
             self.database.indices.delete(index=self.name)
-        ElasticsearchStorage._try_create_index(self)
+        self._try_create_index()
 
     def unique_get(self) -> int:
         if self.database.exists(index=self.name, id=self._unique_key):

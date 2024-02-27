@@ -12,6 +12,34 @@ if TYPE_CHECKING:
     from .schema import Operator
 
 
+class AutoCondition(Condition):
+    def __init__(self, key: str, value: Any, op: "Operator") -> None:
+        self._condition = _get_condition()(key, value, op)
+
+    def to_filter(self) -> Any:
+        return self._condition.to_filter()
+
+
+class AutoVectorStore(VectorStore[T]):
+    def __init__(self, name: str) -> None:
+        self._vectorstore = _get_vectorstore()(name)
+
+    @classmethod
+    def create(cls, name: str, texts: Sequence[str], data: Sequence[T], drop_old: Optional[bool] = False) -> Self:
+        return _get_vectorstore().create(name, texts, data, drop_old)
+
+    def insert(self, texts: Sequence[str], data: Sequence[T]) -> None:
+        return self._vectorstore.insert(texts, data)
+
+    def delete(self, condition: "Condition") -> None:
+        return self._vectorstore.delete(condition)
+
+    def search(
+        self, query: str, top_k: Optional[int] = 4, condition: Optional["Condition"] = None
+    ) -> List[Tuple[T, float]]:
+        return self._vectorstore.search(query, top_k, condition)
+
+
 _vectorstores: Dict[str, Type["VectorStore"]] = {}
 _conditions: Dict[str, Type["Condition"]] = {}
 
@@ -25,38 +53,19 @@ def _list_vectorstores() -> List[str]:
     return list(map(str, _vectorstores.keys()))
 
 
+def _get_condition() -> Type["Condition"]:
+    if settings.vectorstore not in _vectorstores:
+        raise ValueError("Condition not found, should be one of {}.".format(_list_vectorstores()))
+
+    return _conditions[settings.vectorstore]
+
+
+def _get_vectorstore() -> Type["VectorStore"]:
+    if settings.vectorstore not in _vectorstores:
+        raise ValueError("Vectorstore not found, should be one of {}.".format(_list_vectorstores()))
+
+    return _vectorstores[settings.vectorstore]
+
+
 _add_vectorstore("chroma", Chroma, ChromaCondition)
 _add_vectorstore("milvus", Milvus, MilvusCondition)
-if settings.vectorstore not in _vectorstores:
-    raise ValueError("Vectorstore not found, should be one of {}.".format(_list_vectorstores()))
-
-_condition = _conditions[settings.vectorstore]
-_vectorstore = _vectorstores[settings.vectorstore]
-
-
-class AutoCondition(Condition):
-    def __init__(self, key: str, value: Any, op: "Operator") -> None:
-        return _condition.__init__(self, key, value, op)
-
-    def to_filter(self) -> Any:
-        return _condition.to_filter(self)
-
-
-class AutoVectorStore(VectorStore[T]):
-    def __init__(self, name: str) -> None:
-        return _vectorstore.__init__(self, name)
-
-    @classmethod
-    def create(cls, name: str, texts: Sequence[str], data: Sequence[T], drop_old: Optional[bool] = False) -> Self:
-        return _vectorstore.create(name, texts, data, drop_old)
-
-    def insert(self, texts: Sequence[str], data: Sequence[T]) -> None:
-        return _vectorstore.insert(self, texts, data)
-
-    def delete(self, condition: "Condition") -> None:
-        return _vectorstore.delete(self, condition)
-
-    def search(
-        self, query: str, top_k: Optional[int] = 4, condition: Optional["Condition"] = None
-    ) -> List[Tuple[T, float]]:
-        return _vectorstore.search(self, query, top_k, condition)
