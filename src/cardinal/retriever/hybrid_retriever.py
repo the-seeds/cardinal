@@ -86,9 +86,6 @@ class HybridRetriever(Retriever[T]):
         fused_ids = self._rrf_fuse(all_hit_ids)[:top_k]
         results = [id_to_hit[hit_id] for hit_id in fused_ids]
 
-        if self._verbose:
-            logger.info(results)
-
         return results
 
 

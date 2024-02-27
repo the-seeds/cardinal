@@ -2,8 +2,6 @@ import os
 from dataclasses import dataclass
 from typing import Optional
 
-from dotenv import load_dotenv
-
 
 @dataclass
 class Config:
@@ -13,7 +11,6 @@ class Config:
     elasticsearch_uri: Optional[str]
 
 
-load_dotenv()
 settings = Config(
     storage=os.environ.get("STORAGE"),
     search_target=os.environ.get("SEARCH_TARGET"),

@@ -32,9 +32,6 @@ class DenseRetriever(Retriever[T]):
             if score <= self._threshold:
                 results.append(hit)
 
-        if self._verbose:
-            logger.info(results)
-
         return results
 
 

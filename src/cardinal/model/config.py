@@ -2,8 +2,6 @@ import os
 from dataclasses import dataclass
 from typing import Optional
 
-from dotenv import load_dotenv
-
 
 @dataclass
 class Config:
@@ -13,7 +11,6 @@ class Config:
     default_system_prompt: Optional[str]
 
 
-load_dotenv()
 settings = Config(
     embed_model=os.environ.get("EMBED_MODEL"),
     chat_model=os.environ.get("CHAT_MODEL"),

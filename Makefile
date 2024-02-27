@@ -1,6 +1,6 @@
 .PHONY: quality style
 
-check_dirs := src
+check_dirs := src example
 
 quality:
 	ruff $(check_dirs)
