@@ -14,9 +14,9 @@ if TYPE_CHECKING:
 
 
 class ChatOpenAI:
-    def __init__(self) -> None:
-        self.model = settings.chat_model
+    def __init__(self, model: Optional[str] = None) -> None:
         self._client = OpenAI(max_retries=5, timeout=30.0)
+        self._model = model if model is not None else settings.chat_model
 
     def _parse_messages(self, messages: List[BaseMessage]) -> List[Dict[str, str]]:
         return [{"role": message.role, "content": message.content} for message in messages]
@@ -35,7 +35,7 @@ class ChatOpenAI:
         if messages[0].role != Role.SYSTEM and settings.default_system_prompt:
             messages.insert(0, SystemMessage(content=settings.default_system_prompt))
 
-        request_kwargs = {"messages": self._parse_messages(messages), "model": self.model, "stream": stream}
+        request_kwargs = {"messages": self._parse_messages(messages), "model": self._model, "stream": stream}
         if tools is not None:
             request_kwargs["tools"] = self._parse_tools(tools)
 

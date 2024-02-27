@@ -59,7 +59,7 @@ class Chroma(VectorStore[T]):
         client = _get_chroma_client()
         self.store = client.get_or_create_collection(name, embedding_function=None)
         self._batch_size = 1000
-        self._vectorizer = EmbedOpenAI(self._batch_size)
+        self._vectorizer = EmbedOpenAI(batch_size=self._batch_size)
         self._data_field = "_data"
 
     @classmethod

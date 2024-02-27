@@ -49,7 +49,7 @@ class Milvus(VectorStore[T]):
         self._fields: List[str] = []
         self._alias = "default"
         self._batch_size = 1000
-        self._vectorizer = EmbedOpenAI(self._batch_size)
+        self._vectorizer = EmbedOpenAI(batch_size=self._batch_size)
         self._primary_field = "_pk"
         self._embedding_field = "_embedding"
         self._data_field = "_data"
