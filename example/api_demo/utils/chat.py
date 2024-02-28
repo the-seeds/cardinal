@@ -9,7 +9,7 @@ if TYPE_CHECKING:
     from cardinal import BaseMessage
 
 
-class KbqaEngine:
+class ChatEngine:
     def __init__(self, database: str) -> None:
         self._window_size = 6
         self._chat_model = ChatOpenAI()
@@ -18,7 +18,7 @@ class KbqaEngine:
         self._storage = AutoStorage[Document](name=database)
         self._kbqa_template = Template("充分理解以下事实描述：{context}\n\n回答下面的问题：{query}")
 
-    def __call__(self, messages: Sequence["BaseMessage"]) -> Generator[str, None, None]:
+    def stream_chat(self, messages: Sequence["BaseMessage"], **kwargs) -> Generator[str, None, None]:
         messages = messages[-(self._window_size * 2 + 1) :]
         query = messages[-1].content
 
@@ -29,7 +29,7 @@ class KbqaEngine:
 
         augmented_messages = messages[:-1] + [HumanMessage(content=query)]
         response = ""
-        for new_token in self._chat_model.stream_chat(augmented_messages, temperature=0.9):
+        for new_token in self._chat_model.stream_chat(augmented_messages, **kwargs):
             yield new_token
             response += new_token
 

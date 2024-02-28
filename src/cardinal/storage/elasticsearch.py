@@ -15,7 +15,7 @@ if is_elasticsearch_available():
 class ElasticsearchStorage(Storage[T]):
     def __init__(self, name: str) -> None:
         self.name = name
-        self.database = Elasticsearch(hosts=[settings.elasticsearch_uri])
+        self.database = Elasticsearch(hosts=[settings.elasticsearch_uri], max_retries=3, request_timeout=30.0)
         self.searchable = True
         self._unique_key = "unique_{}".format(name)
         self._batch_size = 1000
