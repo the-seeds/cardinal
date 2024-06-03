@@ -27,3 +27,54 @@ jobs:
       - name: Check quality
         run: |
             make style && make quality
+
+  tests:
+    needs: check_code_quality
+
+    env:
+      OPENAI_BASE_URL=http://localhost:8010/v1
+      OPENAI_API_KEY=0
+      EMBED_MODEL=text-embedding-ada-002
+      CHAT_MODEL=gpt-3.5-turbo
+      TOKENIZER_PATH=01-ai/Yi-6B-Chat
+      CHUNK_SIZE=200
+      CHUNK_OVERLAP=30
+      STORAGE=redis
+      SEARCH_TARGET=content
+      REDIS_URI=redis://localhost:6379
+      ELASTICSEARCH_URI=http://localhost:9001
+      VECTORSTORE=chroma
+      CHROMA_PATH=./chroma
+      MILVUS_URI=http://localhost:19530
+      MILVUS_TOKEN=0
+
+    services:
+      redis:
+        image: redis
+        ports:
+          - 6379: 6379
+
+    strategy:
+      matrix:
+        python-version: ["3.9", "3.10", "3.11"]
+        os: ["ubuntu-latest", "windows-latest"]
+
+    runs-on: ${{ matrix.os }}
+    
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: "pip"
+          cache-dependency-path: "setup.py"
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          # cpu version of pytorch
+          pip install -e .
+          pip install -r requirements-dev.txt
+      - name: Test with pytest
+        run: |
+          make test
