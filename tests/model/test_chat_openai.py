@@ -3,7 +3,6 @@ from cardinal.model import ChatOpenAI
 import pytest
 
 
-@pytest.mark.skip(reason='todo')
 def test_chat_openai():
     chat_openai = ChatOpenAI()
     messages = [HumanMessage(content="Say this is a test")]

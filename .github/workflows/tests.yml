@@ -32,32 +32,41 @@ jobs:
     needs: check_code_quality
 
     env:
-      OPENAI_BASE_URL=http://localhost:8010/v1
-      OPENAI_API_KEY=0
-      EMBED_MODEL=text-embedding-ada-002
-      CHAT_MODEL=gpt-3.5-turbo
-      TOKENIZER_PATH=01-ai/Yi-6B-Chat
-      CHUNK_SIZE=200
-      CHUNK_OVERLAP=30
-      STORAGE=redis
-      SEARCH_TARGET=content
-      REDIS_URI=redis://localhost:6379
-      ELASTICSEARCH_URI=http://localhost:9001
-      VECTORSTORE=chroma
-      CHROMA_PATH=./chroma
-      MILVUS_URI=http://localhost:19530
-      MILVUS_TOKEN=0
+      OPENAI_BASE_URL: http://localhost:8010/v1
+      OPENAI_API_KEY: 0
+      EMBED_MODEL: text-embedding-ada-002
+      CHAT_MODEL: gpt-3.5-turbo
+      TOKENIZER_PATH: 01-ai/Yi-6B-Chat
+      CHUNK_SIZE: 200
+      CHUNK_OVERLAP: 30
+      STORAGE: redis
+      SEARCH_TARGET: content
+      REDIS_URI: redis://localhost:6379
+      ELASTICSEARCH_URI: http://localhost:9001
+      VECTORSTORE: milvus
+      CHROMA_PATH: ./chroma
+      MILVUS_URI: http://localhost:19530
+      MILVUS_TOKEN: 0
 
     services:
       redis:
         image: redis
         ports:
-          - 6379: 6379
+          - 6379:6379
+      milvus:
+        image: milvusdb/milvus
+        ports:
+          - 19530:19530
+          - 9091:9091
+      elasticsearch:
+        image: elasticsearch:8.13.4
+        ports:
+          - 9001:9200
 
     strategy:
       matrix:
         python-version: ["3.9", "3.10", "3.11"]
-        os: ["ubuntu-latest", "windows-latest"]
+        os: ["ubuntu-latest"]
 
     runs-on: ${{ matrix.os }}
     
@@ -75,6 +84,7 @@ jobs:
           # cpu version of pytorch
           pip install -e .
           pip install -r requirements-dev.txt
+          pip install pytest
       - name: Test with pytest
         run: |
           make test
