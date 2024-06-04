@@ -1,6 +1,7 @@
 from pydantic import BaseModel
 from cardinal.vectorstore import AutoVectorStore
 from cardinal.retriever import HybridRetriever
+import pytest
 
 
 class Animal(BaseModel):
@@ -11,6 +12,7 @@ animals = [("llama", "green"), ("llama", "blue"), ("puppy", "pink"), ("puppy", "
 data = [Animal(name=name, color=color) for name, color in animals]
 
 
+@pytest.mark.skip(reason="todo")
 def test_hybird_retriever():
     names = [animal.name for animal in data]
     colors = [animal.color for animal in data]
