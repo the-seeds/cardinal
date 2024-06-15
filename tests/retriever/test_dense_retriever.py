@@ -10,7 +10,7 @@ texts = ["llama", "puppy"]
 data = [Animal(name=text) for text in texts]
 
 
-@pytest.mark.skip(reason="todo")
+@pytest.mark.skip(reason="no permission")
 def test_dense_retriever():
     vectorstore = AutoVectorStore[Animal].create(name="test", texts=texts, data=data, drop_old=True)
     retriever = DenseRetriever[Animal](vectorstore_name="test", verbose=True)

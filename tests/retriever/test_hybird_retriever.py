@@ -12,7 +12,7 @@ animals = [("llama", "green"), ("llama", "blue"), ("puppy", "pink"), ("puppy", "
 data = [Animal(name=name, color=color) for name, color in animals]
 
 
-@pytest.mark.skip(reason="todo")
+@pytest.mark.skip(reason="no permission")
 def test_hybird_retriever():
     names = [animal.name for animal in data]
     colors = [animal.color for animal in data]

@@ -1,6 +1,5 @@
 from pydantic import BaseModel
 from cardinal.storage import AutoStorage
-import os
 
 
 class Document(BaseModel):
@@ -11,9 +10,7 @@ class Document(BaseModel):
 doc1 = Document(content="I am alice.")
 doc2 = Document(content="I am bob.")
 
-def test_redis():
-    temp = os.environ.get("STORAGE")
-    os.environ["STORAGE"] = "es"
+def test_storage():
     storage = AutoStorage[Document](name="test")
     
     storage.insert(keys=["doc1", "doc2"], values=[doc1, doc2])
@@ -24,5 +21,4 @@ def test_redis():
     storage.unique_incr()
     storage.unique_incr()
     assert(storage.unique_get()==2)
-    os.environ["STORAGE"] = temp
     
