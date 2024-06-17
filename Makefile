@@ -1,6 +1,6 @@
 .PHONY: quality style
 
-check_dirs := src example
+check_dirs := src
 
 quality:
 	ruff check $(check_dirs)
@@ -9,3 +9,6 @@ quality:
 style:
 	ruff check $(check_dirs) --fix
 	ruff format $(check_dirs)
+
+test:
+	pytest tests/
