@@ -17,10 +17,9 @@ class ElasticsearchStorage(Storage[T]):
         self.name = name
         self.database = Elasticsearch(hosts=[settings.elasticsearch_uri], max_retries=3, request_timeout=30.0)
         self.searchable = True
-        self._unique_key = "unique_{}".format(name)
+        self._unique_key = "_unique_key"
         self._batch_size = 1000
         self._search_target = settings.search_target
-        self._try_create_index()
 
         try:
             self.database.ping()
@@ -52,7 +51,12 @@ class ElasticsearchStorage(Storage[T]):
 
         self.database.indices.create(index=self.name, mappings=mappings, settings=index_settings)
 
+    def _check_exists(self) -> None:
+        if not self.database.indices.exists(index=self.name):
+            raise ValueError("Index {} does not exist.".format(self.name))
+
     def insert(self, keys: Sequence[str], values: Sequence[T]) -> None:
+        self._try_create_index()
         for i in range(0, len(values), self._batch_size):
             actions = []
             for key, value in zip(keys[i : i + self._batch_size], values[i : i + self._batch_size]):
@@ -65,7 +69,12 @@ class ElasticsearchStorage(Storage[T]):
 
             bulk(self.database, actions=actions)
 
+    def delete(self, key: str) -> None:
+        self._check_exists()
+        self.database.delete(index=self.name, id=key)
+
     def query(self, key: str) -> Optional[T]:
+        self._check_exists()
         if self.database.exists(index=self.name, id=key):
             result = self.database.get(index=self.name, id=key)
             return pickle.loads(base64.b64decode(result["_source"]["data"]))
@@ -74,6 +83,7 @@ class ElasticsearchStorage(Storage[T]):
         if self._search_target is None:
             raise ValueError("`SEARCH_TARGET` is not defined.")
 
+        self._check_exists()
         result = self.database.search(
             index=self.name,
             query={"match": {self._search_target: query}},
@@ -86,10 +96,12 @@ class ElasticsearchStorage(Storage[T]):
 
         return ret
 
-    def clear(self) -> None:
-        if self.database.indices.exists(index=self.name):
-            self.database.indices.delete(index=self.name)
-        self._try_create_index()
+    def exists(self) -> bool:
+        return self.database.indices.exists(index=self.name)
+
+    def destroy(self) -> None:
+        self._check_exists()
+        self.database.indices.delete(index=self.name)
 
     def unique_get(self) -> int:
         if self.database.exists(index=self.name, id=self._unique_key):
@@ -97,6 +109,7 @@ class ElasticsearchStorage(Storage[T]):
         return 0
 
     def unique_incr(self) -> None:
+        self._try_create_index()
         value = self.unique_get()
         self.database.index(index=self.name, id=self._unique_key, document={"data": str(value + 1)})
 
@@ -113,13 +126,16 @@ if __name__ == "__main__":
         title: str = "test"
 
     storage = ElasticsearchStorage[Document](name="test")
+    print("exist", storage.exists())  # False
     storage.insert(keys=["doc1", "doc2"], values=[Document(content="I am alice."), Document(content="I am bob.")])
+    print("exist", storage.exists())  # True
     storage.database.indices.refresh()
-    print(storage.query("doc1"))
-    print(storage.search("alice"))
-    storage.clear()
-    print(storage.query("doc1"))
+    print("query", storage.query("doc1"))  # content='I am alice.' title='test'
+    print("search", storage.search("alice"))  # [(Document(content='I am alice.', title='test'), 0.6931471)]
+    storage.delete("doc1")
+    print("query", storage.query("doc1"))  # None
     storage.unique_reset()
     storage.unique_incr()
     storage.unique_incr()
-    print(storage.unique_get())
+    print("get", storage.unique_get())  # 2
+    storage.destroy()

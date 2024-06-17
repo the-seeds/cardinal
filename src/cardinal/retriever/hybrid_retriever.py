@@ -105,3 +105,4 @@ if __name__ == "__main__":
     AutoVectorStore[Animal].create(name="test2", texts=colors, data=data, drop_old=True)
     retriever = HybridRetriever[Animal](vectorstore_names=["test1", "test2"], verbose=True)
     print(retriever.retrieve(query="a pink dog", top_k=2))
+    # [Animal(name='puppy', color='pink'), Animal(name='puppy', color='blue')]

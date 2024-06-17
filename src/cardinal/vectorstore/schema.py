@@ -26,10 +26,21 @@ class Operator(IntEnum):
 class Condition(ABC):
     @abstractmethod
     def __init__(self, key: str, value: Any, op: "Operator") -> None:
+        r"""
+        Initializes a condition.
+
+        Args:
+            key: the key of the condition.
+            value: the value of the condition.
+            op: the operator.
+        """
         ...
 
     @abstractmethod
     def to_filter(self) -> Any:
+        r"""
+        Converts the condition to filter.
+        """
         ...
 
 
@@ -96,5 +107,19 @@ class VectorStore(Generic[T], ABC):
 
         Returns:
             hits_with_scores: the hit results with scores (smaller is better).
+        """
+        ...
+
+    @abstractmethod
+    def exists(self) -> bool:
+        r"""
+        Checks if the vectorstore exists.
+        """
+        ...
+
+    @abstractmethod
+    def destroy(self) -> None:
+        r"""
+        Destroys the vectorstore.
         """
         ...

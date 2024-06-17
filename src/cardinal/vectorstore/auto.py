@@ -39,6 +39,12 @@ class AutoVectorStore(VectorStore[T]):
     ) -> List[Tuple[T, float]]:
         return self._vectorstore.search(query, top_k, condition)
 
+    def exists(self) -> bool:
+        return self._vectorstore.exists()
+
+    def destroy(self) -> None:
+        return self._vectorstore.destroy()
+
 
 _vectorstores: Dict[str, Type["VectorStore"]] = {}
 _conditions: Dict[str, Type["Condition"]] = {}

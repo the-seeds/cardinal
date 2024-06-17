@@ -1,0 +1,10 @@
+build:
+  database: test
+  folder: data
+
+launch:
+  database: test
+
+dump:
+  database: test
+  folder: output

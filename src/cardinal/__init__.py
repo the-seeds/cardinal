@@ -1,4 +1,4 @@
-from .collector import MsgCollector
+from .collector import BaseCollector
 from .common import (
     AssistantMessage,
     BaseMessage,
@@ -19,7 +19,7 @@ from .vectorstore import AutoVectorStore
 
 
 __all__ = [
-    "MsgCollector",
+    "BaseCollector",
     "AssistantMessage",
     "BaseMessage",
     "Function",
@@ -41,4 +41,4 @@ __all__ = [
     "AutoStorage",
     "AutoVectorStore",
 ]
-__version__ = "0.2.1"
+__version__ = "0.3.0.dev0"

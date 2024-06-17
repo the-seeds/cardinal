@@ -1,4 +1,4 @@
-from .msg_collector import MsgCollector
+from .base_collector import BaseCollector
 
 
-__all__ = ["MsgCollector"]
+__all__ = ["BaseCollector"]

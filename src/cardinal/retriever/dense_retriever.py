@@ -45,4 +45,4 @@ if __name__ == "__main__":
     data = [Animal(name=text) for text in texts]
     vectorstore = AutoVectorStore[Animal].create(name="test", texts=texts, data=data, drop_old=True)
     retriever = DenseRetriever[Animal](vectorstore_name="test", verbose=True)
-    print(retriever.retrieve(query="dog", top_k=1))
+    print(retriever.retrieve(query="dog", top_k=1))  # [Animal(name='puppy')]

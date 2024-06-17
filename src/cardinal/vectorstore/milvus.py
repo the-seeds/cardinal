@@ -107,14 +107,20 @@ class Milvus(VectorStore[T]):
             self._create_index()
             self.store.load()
 
+    def _try_init_and_check_exists(self) -> None:
+        if self.store is None:
+            self._init()
+
+        if self.store is None:
+            raise ValueError("Index {} does not exist.".format(self.name))
+
     @classmethod
     def create(cls, name: str, texts: Sequence[str], data: Sequence[T], drop_old: Optional[bool] = False) -> Self:
         milvus = cls(name=name)
         milvus._init()
 
         if drop_old and milvus.store is not None:
-            milvus.store.drop()
-            milvus.store = None
+            milvus.destroy()
 
         milvus.insert(texts, data)
         return milvus
@@ -136,16 +142,13 @@ class Milvus(VectorStore[T]):
             self.store.insert(insert_list)
 
     def delete(self, condition: "MilvusCondition") -> None:
+        self._try_init_and_check_exists()
         self.store.delete(condition.to_filter())
 
     def search(
         self, query: str, top_k: Optional[int] = 4, condition: Optional["MilvusCondition"] = None
     ) -> List[Tuple[T, float]]:
-        if self.store is None:
-            self._init()
-
-        if self.store is None:
-            raise ValueError("Index {} does not exist.".format(self.name))
+        self._try_init_and_check_exists()
 
         result: "SearchResult" = self.store.search(
             data=self._vectorizer.batch_embed([query]),
@@ -163,6 +166,18 @@ class Milvus(VectorStore[T]):
 
         return ret
 
+    def exists(self) -> bool:
+        try:
+            self._try_init_and_check_exists()
+            return True
+        except ValueError:
+            return False
+
+    def destroy(self):
+        self._try_init_and_check_exists()
+        self.store.drop()
+        self.store = None
+
 
 if __name__ == "__main__":
     from pydantic import BaseModel
@@ -172,8 +187,13 @@ if __name__ == "__main__":
 
     texts = ["dog", "llama", "puppy"]
     data = [Animal(name=text) for text in texts]
-    milvus = Milvus[Animal].create(name="test", texts=texts, data=data, drop_old=True)
+    milvus = Milvus[Animal](name="test")
+    print("exist", milvus.exists())  # False
+    milvus.insert(texts=texts, data=data)
     milvus.store.flush()
     milvus.delete(MilvusCondition(key="name", value="dog", op=Operator.Eq))
     milvus.store.flush()
-    print(milvus.search(query="dog", top_k=2))
+    print("search", milvus.search(query="dog", top_k=2))
+    # [(Animal(name='puppy'), 0.8510237336158752), (Animal(name='llama'), 1.1970627307891846)]
+    print("exist", milvus.exists())  # True
+    milvus.destroy()

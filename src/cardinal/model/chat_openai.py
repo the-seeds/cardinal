@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING, Any, Dict, Generator, List, Optional, Union
 from openai import OpenAI
 from tenacity import retry, stop_after_attempt, wait_random_exponential
 
-from ..common import BaseMessage, FunctionAvailable, FunctionCall, Role, SystemMessage
+from ..common import BaseMessage, FunctionAvailable, FunctionCall
 from .config import settings
 
 
@@ -16,25 +16,22 @@ if TYPE_CHECKING:
 class ChatOpenAI:
     def __init__(self, model: Optional[str] = None) -> None:
         self._client = OpenAI(max_retries=5, timeout=30.0)
-        self._model = model if model is not None else settings.chat_model
+        self._model = model if model is not None else settings.default_chat_model
 
     def _parse_messages(self, messages: List[BaseMessage]) -> List[Dict[str, str]]:
-        return [{"role": message.role, "content": message.content} for message in messages]
+        return [message.model_dump() for message in messages]
 
     def _parse_tools(self, tools: List[FunctionAvailable]) -> List[Dict[str, Any]]:
-        return [{"type": tool.type, "function": tool.function} for tool in tools]
+        return [tool.model_dump() for tool in tools]
 
     @retry(wait=wait_random_exponential(min=1, max=60), stop=stop_after_attempt(5))
     def _completion_with_backoff(
         self,
         messages: List[BaseMessage],
-        stream: Optional[bool] = False,
+        stream: bool = False,
         tools: Optional[List[FunctionAvailable]] = None,
         **kwargs,
     ) -> Union["ChatCompletion", "Stream[ChatCompletionChunk]"]:
-        if messages[0].role != Role.SYSTEM and settings.default_system_prompt:
-            messages.insert(0, SystemMessage(content=settings.default_system_prompt))
-
         request_kwargs = {"messages": self._parse_messages(messages), "model": self._model, "stream": stream}
         if tools is not None:
             request_kwargs["tools"] = self._parse_tools(tools)
