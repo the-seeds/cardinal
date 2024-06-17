@@ -1,4 +1,13 @@
-from .message import AssistantMessage, BaseMessage, FunctionAvailable, FunctionCall, HumanMessage, Role, SystemMessage
+from .message import (
+    AssistantMessage,
+    BaseMessage,
+    FunctionAvailable,
+    FunctionCall,
+    HumanMessage,
+    Role,
+    SystemMessage,
+    ToolMessage,
+)
 from .template import Function, Template
 
 
@@ -12,4 +21,5 @@ __all__ = [
     "Role",
     "SystemMessage",
     "Template",
+    "ToolMessage",
 ]

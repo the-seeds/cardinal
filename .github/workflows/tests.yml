@@ -2,9 +2,19 @@ name: tests
 
 on:
   push:
-    branches: [ "main" ]
+    branches:
+      - main
+    paths:
+      - "**.py"
+      - "requirements.txt"
+      - ".github/workflows/*.yml"
   pull_request:
-    branches: [ "main" ]
+    branches:
+      - main
+    paths:
+      - "**.py"
+      - "requirements.txt"
+      - ".github/workflows/*.yml"
 
 jobs:
   check_code_quality:
@@ -12,21 +22,24 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
 
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.9"
+          cache: "pip"
+          cache-dependency-path: "setup.py"
 
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          python -m pip install ruff
+          python -m pip install .[dev]
 
       - name: Check quality
         run: |
-            make style && make quality
+          make style && make quality
 
   tests:
     needs: check_code_quality
@@ -34,14 +47,16 @@ jobs:
     env:
       OPENAI_BASE_URL: https://ai-yyds.com/v1
       OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-      EMBED_MODEL: text-embedding-ada-002
-      CHAT_MODEL: gpt-3.5-turbo
-      TOKENIZER_PATH: 01-ai/Yi-6B-Chat
-      CHUNK_SIZE: 200
-      CHUNK_OVERLAP: 30
+      DEFAULT_EMBED_MODEL: text-embedding-ada-002
+      DEFAULT_CHAT_MODEL: gpt-3.5-turbo
+      HF_TOKENIZER_PATH: 01-ai/Yi-6B-Chat
+      DEFAULT_CHUNK_SIZE: 300
+      DEFAULT_CHUNK_OVERLAP: 100
+      STORAGE: redis
       SEARCH_TARGET: content
       REDIS_URI: redis://localhost:6379
       ELASTICSEARCH_URI: http://localhost:9200
+      VECTORSTORE: chroma
       CHROMA_PATH: ./chroma
       MILVUS_URI: http://localhost:19530
       MILVUS_TOKEN: 0
@@ -52,47 +67,43 @@ jobs:
         ports:
           - 6379:6379
 
-    strategy:
-      matrix:
-        python-version: ["3.9", "3.10", "3.11"]
-        os: ["ubuntu-latest"]
-
-    runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-latest
     
     steps:
-      - uses: actions/checkout@v3
-      - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v4
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
         with:
-          python-version: ${{ matrix.python-version }}
+          python-version: "3.9"
           cache: "pip"
           cache-dependency-path: "setup.py"
+
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          # cpu version of pytorch
-          pip install -e .
-          pip install -r requirements-dev.txt
-          pip install pytest
+          python -m pip install .[dev]
           wget https://github.com/milvus-io/milvus/releases/download/v2.4.4/milvus-standalone-docker-compose.yml -O docker-compose.yml
           sudo docker compose up -d
-      - name: Test on redis and chroma
-        env:
-          STORAGE: redis
-          VECTORSTORE: chroma
+
+      - name: Test with pytest
         run: |
           make test
+
       - name: Configure sysctl limits
         run: |
           sudo swapoff -a
           sudo sysctl -w vm.swappiness=1
           sudo sysctl -w fs.file-max=262144
           sudo sysctl -w vm.max_map_count=262144
+
       - name: Runs Elasticsearch
         uses: elastic/elastic-github-actions/elasticsearch@master
         with:
           stack-version: 8.14.1
           security-enabled: false
+
       - name: Test on es and milvus
         env:
           STORAGE: es

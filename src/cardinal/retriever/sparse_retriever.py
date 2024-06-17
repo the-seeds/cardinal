@@ -8,6 +8,7 @@ from .schema import Retriever, T
 if TYPE_CHECKING:
     from ..vectorstore.schema import Condition
 
+
 logger = get_logger(__name__)
 
 
@@ -40,4 +41,4 @@ if __name__ == "__main__":
     storage = AutoStorage[Document](name="test")
     storage.insert(keys=["doc1", "doc2"], values=[Document(content="I am alice."), Document(content="I am bob.")])
     retriever = SparseRetriever(storage_name="test", verbose=True)
-    print(retriever.retrieve(query="alice", top_k=1))
+    print(retriever.retrieve(query="alice", top_k=1))  # [Document(content='I am alice.', title='test')]

@@ -56,27 +56,40 @@ def _get_chroma_client() -> "ClientAPI":
 
 class Chroma(VectorStore[T]):
     def __init__(self, name: str) -> None:
-        client = _get_chroma_client()
-        self.store = client.get_or_create_collection(name, embedding_function=None)
+        self.name = name
+        self.store = None
         self._batch_size = 1000
         self._vectorizer = EmbedOpenAI(batch_size=self._batch_size)
         self._data_field = "_data"
 
-    @classmethod
-    def create(cls, name: str, texts: Sequence[str], data: Sequence[T], drop_old: Optional[bool] = False) -> Self:
-        if drop_old:
+    def _init(self) -> None:
+        client = _get_chroma_client()
+        self.store = client.get_or_create_collection(self.name, embedding_function=None)
+
+    def _try_init_and_check_exists(self) -> None:
+        if self.store is None:
             client = _get_chroma_client()
             try:
-                client.delete_collection(name)
-            except Exception:
-                pass
+                self.store = client.get_collection(self.name, embedding_function=None)
+            except ValueError:
+                raise ValueError("Index {} does not exist.".format(self.name))
 
+    @classmethod
+    def create(cls, name: str, texts: Sequence[str], data: Sequence[T], drop_old: Optional[bool] = False) -> Self:
         chroma = cls(name=name)
+        chroma._init()
+
+        if drop_old:
+            chroma.destroy()
+
         chroma.insert(texts, data)
         return chroma
 
     def insert(self, texts: Sequence[str], data: Sequence[T]) -> None:
         embeddings = self._vectorizer.batch_embed(texts)
+        if self.store is None:
+            self._init()
+
         ids = []
         metadatas = []
         for example in data:
@@ -99,11 +112,14 @@ class Chroma(VectorStore[T]):
             )
 
     def delete(self, condition: "ChromaCondition") -> None:
+        self._try_init_and_check_exists()
         self.store.delete(where=condition.to_filter())
 
     def search(
         self, query: str, top_k: Optional[int] = 4, condition: Optional["ChromaCondition"] = None
     ) -> List[Tuple[T, float]]:
+        self._try_init_and_check_exists()
+
         result = self.store.query(
             query_embeddings=self._vectorizer.batch_embed([query]),
             n_results=top_k,
@@ -117,6 +133,19 @@ class Chroma(VectorStore[T]):
             ret.append((example, score))
         return ret
 
+    def exists(self) -> bool:
+        try:
+            self._try_init_and_check_exists()
+            return True
+        except ValueError:
+            return False
+
+    def destroy(self) -> None:
+        self._try_init_and_check_exists()
+        client = _get_chroma_client()
+        client.delete_collection(self.name)
+        self.store = None
+
 
 if __name__ == "__main__":
     from pydantic import BaseModel
@@ -126,6 +155,11 @@ if __name__ == "__main__":
 
     texts = ["dog", "llama", "puppy"]
     data = [Animal(name=text) for text in texts]
-    chroma = Chroma[Animal].create(name="test", texts=texts, data=data, drop_old=True)
+    chroma = Chroma[Animal](name="test")
+    print("exist", chroma.exists())  # False
+    chroma.insert(texts=texts, data=data)
     chroma.delete(ChromaCondition(key="name", value="dog", op=Operator.Eq))
-    print(chroma.search(query="dog", top_k=2))
+    print("search", chroma.search(query="dog", top_k=2))
+    # [(Animal(name='puppy'), 0.8510237629521972), (Animal(name='llama'), 1.1970626651804697)]
+    print("exist", chroma.exists())  # True
+    chroma.destroy()

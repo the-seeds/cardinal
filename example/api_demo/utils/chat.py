@@ -1,8 +1,8 @@
 from typing import TYPE_CHECKING, Generator, Sequence
 
-from cardinal import AssistantMessage, AutoStorage, ChatOpenAI, DenseRetriever, HumanMessage, MsgCollector, Template
+from cardinal import AssistantMessage, AutoStorage, BaseCollector, ChatOpenAI, DenseRetriever, HumanMessage, Template
 
-from .protocol import DocIndex, Document
+from .protocol import DocIndex, Document, History
 
 
 if TYPE_CHECKING:
@@ -13,7 +13,7 @@ class ChatEngine:
     def __init__(self, database: str) -> None:
         self._window_size = 6
         self._chat_model = ChatOpenAI()
-        self._collector = MsgCollector(storage_name=database)
+        self._collector = BaseCollector[History](storage_name=database)
         self._retriever = DenseRetriever[DocIndex](vectorstore_name=database, threshold=1.0, verbose=True)
         self._storage = AutoStorage[Document](name=database)
         self._kbqa_template = Template("充分理解以下事实描述：{context}\n\n回答下面的问题：{query}")
@@ -33,4 +33,4 @@ class ChatEngine:
             yield new_token
             response += new_token
 
-        self._collector.collect(messages + [AssistantMessage(content=response)])
+        self._collector.collect(History(messages=(augmented_messages + [AssistantMessage(content=response)])))

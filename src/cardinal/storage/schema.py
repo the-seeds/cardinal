@@ -30,9 +30,22 @@ class Storage(Generic[T], ABC):
         ...
 
     @abstractmethod
+    def delete(self, key: str) -> None:
+        r"""
+        Deletes the value associated with the given key.
+
+        Args:
+            key: the key to delete.
+        """
+        ...
+
+    @abstractmethod
     def query(self, key: str) -> Optional[T]:
         r"""
         Gets the value associated with the given key.
+
+        Args:
+            key: the key to query.
         """
         ...
 
@@ -51,10 +64,18 @@ class Storage(Generic[T], ABC):
         ...
 
     @abstractmethod
-    def clear(self) -> None:
+    def exists(self) -> bool:
         r"""
-        Clears all the data in the storage.
+        Checks if the storage exists.
         """
+        ...
+
+    @abstractmethod
+    def destroy(self) -> None:
+        r"""
+        Destroys the storage.
+        """
+        ...
 
     @abstractmethod
     def unique_get(self) -> int:

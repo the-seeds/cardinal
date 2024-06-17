@@ -13,14 +13,20 @@ class AutoStorage(Storage[T]):
     def insert(self, keys: Sequence[str], values: Sequence[T]) -> None:
         return self._storage.insert(keys, values)
 
+    def delete(self, key: str) -> None:
+        return self._storage.delete(key)
+
     def query(self, key: str) -> Optional[T]:
         return self._storage.query(key)
 
     def search(self, query: str, top_k: Optional[int] = 10) -> List[Tuple[T, float]]:
         return self._storage.search(query, top_k)
 
-    def clear(self) -> None:
-        return self._storage.clear()
+    def exists(self) -> bool:
+        return self._storage.exists()
+
+    def destroy(self) -> None:
+        return self._storage.destroy()
 
     def unique_get(self) -> int:
         return self._storage.unique_get()

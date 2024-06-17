@@ -16,7 +16,7 @@ class RedisStorage(Storage[T]):
         self.name = name
         self.database = Redis.from_url(url=settings.redis_uri)
         self.searchable = False
-        self._unique_key = "unique_{}".format(name)
+        self._unique_key = "_unique_key"
 
         try:
             self.database.ping()
@@ -28,6 +28,9 @@ class RedisStorage(Storage[T]):
             encoded_value = pickle.dumps(value)
             self.database.hset(self.name, key, encoded_value)
 
+    def delete(self, key: str) -> None:
+        return self.database.hdel(self.name, key)
+
     def query(self, key: str) -> Optional[T]:
         encoded_value = self.database.hget(self.name, key)
         if encoded_value is not None:
@@ -36,20 +39,24 @@ class RedisStorage(Storage[T]):
     def search(self, query: str, top_k: Optional[int] = 10) -> List[Tuple[T, float]]:
         raise NotImplementedError
 
-    def clear(self) -> None:
+    def exists(self) -> bool:
+        return self.database.hlen(self.name) > 0
+
+    def destroy(self) -> None:
         self.database.hdel(self.name, *self.database.hkeys(self.name))
 
     def unique_get(self) -> int:
-        value = self.database.get(self._unique_key)
+        value = self.database.hget(self.name, self._unique_key)
         if isinstance(value, bytes):
             return int(value.decode("utf-8"))
+
         return 0
 
     def unique_incr(self) -> None:
-        self.database.incr(self._unique_key)
+        self.database.hincrby(self.name, self._unique_key)
 
     def unique_reset(self) -> None:
-        self.database.delete(self._unique_key)
+        self.database.hdel(self.name, self._unique_key)
 
 
 if __name__ == "__main__":
@@ -60,11 +67,14 @@ if __name__ == "__main__":
         title: str = "test"
 
     storage = RedisStorage[Document](name="test")
+    print("exist", storage.exists())  # False
     storage.insert(keys=["doc1", "doc2"], values=[Document(content="I am alice."), Document(content="I am bob.")])
-    print(storage.query("doc1"))
-    storage.clear()
-    print(storage.query("doc1"))
+    print("exist", storage.exists())  # True
+    print("query", storage.query("doc1"))  # content='I am alice.' title='test'
+    storage.delete("doc1")
+    print("query", storage.query("doc1"))  # None
     storage.unique_reset()
     storage.unique_incr()
     storage.unique_incr()
-    print(storage.unique_get())
+    print("get", storage.unique_get())  # 2
+    storage.destroy()
