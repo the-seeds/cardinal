@@ -1,6 +1,6 @@
 .PHONY: quality style test
 
-check_dirs := src
+check_dirs := src tests
 
 quality:
 	ruff check $(check_dirs)
