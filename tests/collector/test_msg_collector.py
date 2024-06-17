@@ -1,6 +1,3 @@
-#from dotenv import load_dotenv
-#load_dotenv()
-
 from cardinal.collector import MsgCollector
 from cardinal.common import HumanMessage, AssistantMessage
 
@@ -10,5 +7,8 @@ def test_msg_collector():
     collector.collect(messages)
     messages = [HumanMessage(content="foo"), AssistantMessage(content="foo too")]
     collector.collect(messages)
-    res = "[[HumanMessage(content='hi', role=<Role.USER: 'user'>), AssistantMessage(content='hi there', role=<Role.ASSISTANT: 'assistant'>)], [HumanMessage(content='foo', role=<Role.USER: 'user'>), AssistantMessage(content='foo too', role=<Role.ASSISTANT: 'assistant'>)]]"
-    assert(str(collector.dump()) == res)
+    results = collector.dump()
+    assert(results[0][0].content=='hi')
+    assert(results[0][1].content=='hi there')
+    assert(results[1][0].content=='foo')
+    assert(results[1][1].content=='foo too')

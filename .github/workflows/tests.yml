@@ -45,8 +45,8 @@ jobs:
     needs: check_code_quality
 
     env:
-      OPENAI_BASE_URL: http://localhost:8010/v1
-      OPENAI_API_KEY: 0
+      OPENAI_BASE_URL: https://ai-yyds.com/v1
+      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
       DEFAULT_EMBED_MODEL: text-embedding-ada-002
       DEFAULT_CHAT_MODEL: gpt-3.5-turbo
       HF_TOKENIZER_PATH: 01-ai/Yi-6B-Chat
@@ -55,7 +55,7 @@ jobs:
       STORAGE: redis
       SEARCH_TARGET: content
       REDIS_URI: redis://localhost:6379
-      ELASTICSEARCH_URI: http://localhost:9001
+      ELASTICSEARCH_URI: http://localhost:9200
       VECTORSTORE: chroma
       CHROMA_PATH: ./chroma
       MILVUS_URI: http://localhost:19530
@@ -84,7 +84,29 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           python -m pip install .[dev]
+          wget https://github.com/milvus-io/milvus/releases/download/v2.4.4/milvus-standalone-docker-compose.yml -O docker-compose.yml
+          sudo docker compose up -d
 
       - name: Test with pytest
+        run: |
+          make test
+
+      - name: Configure sysctl limits
+        run: |
+          sudo swapoff -a
+          sudo sysctl -w vm.swappiness=1
+          sudo sysctl -w fs.file-max=262144
+          sudo sysctl -w vm.max_map_count=262144
+
+      - name: Runs Elasticsearch
+        uses: elastic/elastic-github-actions/elasticsearch@master
+        with:
+          stack-version: 8.14.1
+          security-enabled: false
+
+      - name: Test on es and milvus
+        env:
+          STORAGE: es
+          VECTORSTORE: milvus
         run: |
           make test

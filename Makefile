@@ -1,4 +1,4 @@
-.PHONY: quality style
+.PHONY: quality style test
 
 check_dirs := src
 
