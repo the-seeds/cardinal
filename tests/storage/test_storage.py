@@ -12,13 +12,15 @@ doc2 = Document(content="I am bob.")
 
 def test_storage():
     storage = AutoStorage[Document](name="test")
-    
+    assert(storage.exists())  # False
     storage.insert(keys=["doc1", "doc2"], values=[doc1, doc2])
-    assert(storage.query("doc1")==doc1)
-    storage.clear()
-    assert(storage.query("doc1")==None)
+    assert(storage.exists())  # True
+    assert(storage.query("doc1") == doc1)  # content='I am alice.' title='test'
+    storage.delete("doc1")
+    assert(storage.query("doc1") is None)  # None
     storage.unique_reset()
     storage.unique_incr()
     storage.unique_incr()
-    assert(storage.unique_get()==2)
+    assert(storage.unique_get() == 2)  # 2
+    storage.destroy()
     

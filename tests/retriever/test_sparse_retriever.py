@@ -21,5 +21,5 @@ def test_sparse_retriever():
     storage = AutoStorage[Document](name="test")
     storage.insert(keys=["doc1", "doc2"], values=[doc1, doc2])
     retriever = SparseRetriever(storage_name="test", verbose=True)
-    assert(retriever.retrieve is not None)
+    assert(retriever.retrieve(query="alice", top_k=1) == [doc1])
     

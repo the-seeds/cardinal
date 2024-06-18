@@ -19,4 +19,4 @@ def test_hybird_retriever():
     AutoVectorStore[Animal].create(name="test1", texts=names, data=data, drop_old=True)
     AutoVectorStore[Animal].create(name="test2", texts=colors, data=data, drop_old=True)
     retriever = HybridRetriever[Animal](vectorstore_names=["test1", "test2"], verbose=True)
-    print(retriever.retrieve(query="a pink dog", top_k=2))
+    assert(retriever.retrieve(query="a pink dog", top_k=2) == [data[2], data[3]])
