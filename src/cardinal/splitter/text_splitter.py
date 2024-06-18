@@ -15,10 +15,10 @@ class TextSplitter:
     https://github.com/langchain-ai/langchain/blob/v0.1.5/libs/langchain/langchain/text_splitter.py
     """
 
-    def __init__(self, chunk_size: Optional[int] = None, chuck_overlap: Optional[int] = None) -> None:
+    def __init__(self, chunk_size: Optional[int] = None, chunk_overlap: Optional[int] = None) -> None:
         self._separators = ["\n\n", "\n", ". ", ", ", " ", ""]
         self._chunk_size = chunk_size if chunk_size is not None else settings.default_chunk_size
-        self._chunk_overlap = chuck_overlap if chuck_overlap is not None else settings.default_chunk_overlap
+        self._chunk_overlap = chunk_overlap if chunk_overlap is not None else settings.default_chunk_overlap
         assert self._chunk_overlap < self._chunk_size, "chunk overlap must be larger than chunk size"
         self._counter = TokenCounter()
 

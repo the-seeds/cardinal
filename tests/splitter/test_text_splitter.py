@@ -2,7 +2,7 @@ from cardinal.splitter import CJKTextSplitter
 
 
 def test_text_splitter():
-    splitter = CJKTextSplitter(chunk_size=30, chuck_overlap=10)
+    splitter = CJKTextSplitter(chunk_size=30, chunk_overlap=10)
     text = (
         "The document presents FastEdit, a repository aimed at efficiently injecting "
         "fresh and customized knowledge into large language models using a single command. "
