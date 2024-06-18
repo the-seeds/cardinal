@@ -46,7 +46,7 @@ jobs:
     needs: check_code_quality
 
     env:
-      OPENAI_BASE_URL: https://ai-yyds.com/v1
+      OPENAI_BASE_URL: ${{ secrets.OPENAI_BASE_URL }}
       OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
       DEFAULT_EMBED_MODEL: text-embedding-ada-002
       DEFAULT_CHAT_MODEL: gpt-3.5-turbo

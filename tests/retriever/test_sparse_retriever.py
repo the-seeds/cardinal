@@ -20,6 +20,8 @@ ENV_STORAGE = os.getenv('STORAGE')
 def test_sparse_retriever():
     storage = AutoStorage[Document](name="test")
     storage.insert(keys=["doc1", "doc2"], values=[doc1, doc2])
+    if ENV_STORAGE == 'es':
+        storage._storage.database.indices.refresh()
     retriever = SparseRetriever(storage_name="test", verbose=True)
     assert(retriever.retrieve(query="alice", top_k=1) == [doc1])
-    
+    storage.destroy()

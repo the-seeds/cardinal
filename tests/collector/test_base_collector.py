@@ -17,3 +17,4 @@ def test_base_collector():
     results = collector.dump()
     assert(results[0] == history1)
     assert(results[1] == history2)
+    collector._storage.destroy()
