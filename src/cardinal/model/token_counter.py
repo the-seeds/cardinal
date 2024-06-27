@@ -14,14 +14,15 @@ if is_transformers_available():
 class TokenCounter:
     def __init__(self, model: Optional[str] = None) -> None:
         if settings.hf_tokenizer_path is not None:
-            tokenizer = AutoTokenizer.from_pretrained(
+            self._encoding = AutoTokenizer.from_pretrained(
                 settings.hf_tokenizer_path,
                 trust_remote_code=True,
             )
-            self._encode_func = lambda text: len(tokenizer.tokenize(text))
         else:
-            encoding = tiktoken.encoding_for_model(model if model is not None else settings.default_chat_model)
-            self._encode_func = lambda text: len(encoding.encode(text))
+            self._encoding = tiktoken.encoding_for_model(model if model is not None else settings.default_chat_model)
 
     def __call__(self, text: str) -> int:
-        return self._encode_func(text)
+        if settings.hf_tokenizer_path is not None:
+            return len(self._encoding.tokenize(text))
+        else:
+            return len(self._encoding.encode(text))
