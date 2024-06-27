@@ -57,24 +57,3 @@ class RedisStorage(Storage[T]):
 
     def unique_reset(self) -> None:
         self.database.hdel(self.name, self._unique_key)
-
-
-if __name__ == "__main__":
-    from pydantic import BaseModel
-
-    class Document(BaseModel):
-        content: str
-        title: str = "test"
-
-    storage = RedisStorage[Document](name="test")
-    print("exist", storage.exists())  # False
-    storage.insert(keys=["doc1", "doc2"], values=[Document(content="I am alice."), Document(content="I am bob.")])
-    print("exist", storage.exists())  # True
-    print("query", storage.query("doc1"))  # content='I am alice.' title='test'
-    storage.delete("doc1")
-    print("query", storage.query("doc1"))  # None
-    storage.unique_reset()
-    storage.unique_incr()
-    storage.unique_incr()
-    print("get", storage.unique_get())  # 2
-    storage.destroy()

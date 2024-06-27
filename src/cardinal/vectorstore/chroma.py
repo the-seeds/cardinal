@@ -145,21 +145,3 @@ class Chroma(VectorStore[T]):
         client = _get_chroma_client()
         client.delete_collection(self.name)
         self.store = None
-
-
-if __name__ == "__main__":
-    from pydantic import BaseModel
-
-    class Animal(BaseModel):
-        name: str
-
-    texts = ["dog", "llama", "puppy"]
-    data = [Animal(name=text) for text in texts]
-    chroma = Chroma[Animal](name="test")
-    print("exist", chroma.exists())  # False
-    chroma.insert(texts=texts, data=data)
-    chroma.delete(ChromaCondition(key="name", value="dog", op=Operator.Eq))
-    print("search", chroma.search(query="dog", top_k=2))
-    # [(Animal(name='puppy'), 0.8510237629521972), (Animal(name='llama'), 1.1970626651804697)]
-    print("exist", chroma.exists())  # True
-    chroma.destroy()

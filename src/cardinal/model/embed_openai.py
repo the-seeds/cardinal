@@ -24,8 +24,3 @@ class EmbedOpenAI:
         for i in range(0, len(texts), self._batch_size):
             embeddings.extend(self._get_embeddings(texts[i : i + self._batch_size]))
         return embeddings
-
-
-if __name__ == "__main__":
-    embed_openai = EmbedOpenAI()
-    print(embed_openai.batch_embed(["This is a test"]))

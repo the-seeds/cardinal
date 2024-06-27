@@ -177,23 +177,3 @@ class Milvus(VectorStore[T]):
         self._try_init_and_check_exists()
         self.store.drop()
         self.store = None
-
-
-if __name__ == "__main__":
-    from pydantic import BaseModel
-
-    class Animal(BaseModel):
-        name: str
-
-    texts = ["dog", "llama", "puppy"]
-    data = [Animal(name=text) for text in texts]
-    milvus = Milvus[Animal](name="test")
-    print("exist", milvus.exists())  # False
-    milvus.insert(texts=texts, data=data)
-    milvus.store.flush()
-    milvus.delete(MilvusCondition(key="name", value="dog", op=Operator.Eq))
-    milvus.store.flush()
-    print("search", milvus.search(query="dog", top_k=2))
-    # [(Animal(name='puppy'), 0.8510237336158752), (Animal(name='llama'), 1.1970627307891846)]
-    print("exist", milvus.exists())  # True
-    milvus.destroy()

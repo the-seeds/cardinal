@@ -22,24 +22,3 @@ class BaseCollector(Collector[T]):
             results.append(self._storage.query(self._prefix.format(i)))
 
         return results
-
-
-if __name__ == "__main__":
-    from pydantic import BaseModel
-
-    from ..common import AssistantMessage, BaseMessage, HumanMessage
-
-    class History(BaseModel):
-        messages: List[BaseMessage]
-
-    collector = BaseCollector[History](storage_name="test", drop_old=True)
-    messages = [HumanMessage(content="hi"), AssistantMessage(content="hi there")]
-    collector.collect(History(messages=messages))
-    messages = [HumanMessage(content="foo"), AssistantMessage(content="foo too")]
-    collector.collect(History(messages=messages))
-    print(collector.dump())
-    # [History(messages=[
-    # HumanMessage(role=<Role.USER: 'user'>, content='hi'),
-    # AssistantMessage(role=<Role.ASSISTANT: 'assistant'>, content='hi there', tool_calls=None)]),
-    # History(messages=[HumanMessage(role=<Role.USER: 'user'>, content='foo'),
-    # AssistantMessage(role=<Role.ASSISTANT: 'assistant'>, content='foo too', tool_calls=None)])]

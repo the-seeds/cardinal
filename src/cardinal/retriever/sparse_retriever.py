@@ -29,16 +29,3 @@ class SparseRetriever(Retriever[T]):
             results.append(hit)
 
         return results
-
-
-if __name__ == "__main__":
-    from pydantic import BaseModel
-
-    class Document(BaseModel):
-        content: str
-        title: str = "test"
-
-    storage = AutoStorage[Document](name="test")
-    storage.insert(keys=["doc1", "doc2"], values=[Document(content="I am alice."), Document(content="I am bob.")])
-    retriever = SparseRetriever(storage_name="test", verbose=True)
-    print(retriever.retrieve(query="alice", top_k=1))  # [Document(content='I am alice.', title='test')]

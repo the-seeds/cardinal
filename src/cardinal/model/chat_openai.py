@@ -51,11 +51,3 @@ class ChatOpenAI:
             self._completion_with_backoff(messages=messages, tools=tools, **kwargs).choices[0].message.tool_calls[0]
         )  # current only support a single tool
         return FunctionCall(name=tool_call.function.name, arguments=json.loads(tool_call.function.arguments))
-
-
-if __name__ == "__main__":
-    from ..common import HumanMessage
-
-    chat_openai = ChatOpenAI()
-    messages = [HumanMessage(content="Say this is a test")]
-    print(chat_openai.chat(messages))

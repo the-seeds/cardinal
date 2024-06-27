@@ -100,16 +100,3 @@ class CJKTextSplitter(TextSplitter):
         text = re.sub(r"([。！？；][’”]{0,2})([^，。！？；])", r"\1\n\2", text)
         text = text.rstrip()
         return super().split(text)
-
-
-if __name__ == "__main__":
-    splitter = CJKTextSplitter()
-    text = (
-        "The document presents FastEdit, a repository aimed at efficiently injecting "
-        "fresh and customized knowledge into large language models using a single command. "
-        "It lists the supported models, implemented algorithms, "
-        "hardware and software requirements, and provides a guide on getting started "
-        "with model editing. It also includes a case study on editing language models "
-        "and outlines future implementation goals."
-    )
-    print(splitter.split(text))

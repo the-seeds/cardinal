@@ -87,22 +87,3 @@ class HybridRetriever(Retriever[T]):
         results = [id_to_hit[hit_id] for hit_id in fused_ids]
 
         return results
-
-
-if __name__ == "__main__":
-    from pydantic import BaseModel
-
-    class Animal(BaseModel):
-        name: str
-        color: str
-
-    animals = [("llama", "green"), ("llama", "blue"), ("puppy", "pink"), ("puppy", "blue")]
-    data = [Animal(name=name, color=color) for name, color in animals]
-    print(data)
-    names = [animal.name for animal in data]
-    colors = [animal.color for animal in data]
-    AutoVectorStore[Animal].create(name="test1", texts=names, data=data, drop_old=True)
-    AutoVectorStore[Animal].create(name="test2", texts=colors, data=data, drop_old=True)
-    retriever = HybridRetriever[Animal](vectorstore_names=["test1", "test2"], verbose=True)
-    print(retriever.retrieve(query="a pink dog", top_k=2))
-    # [Animal(name='puppy', color='pink'), Animal(name='puppy', color='blue')]

@@ -25,8 +25,3 @@ class TokenCounter:
 
     def __call__(self, text: str) -> int:
         return self._encode_func(text)
-
-
-if __name__ == "__main__":
-    counter = TokenCounter()
-    print(counter("This is a test"))
