@@ -15,7 +15,7 @@ from .model import ChatOpenAI, EmbedOpenAI, TokenCounter
 from .retriever import DenseRetriever, HybridRetriever, SparseRetriever
 from .splitter import CJKTextSplitter, TextSplitter
 from .storage import AutoStorage
-from .vectorstore import AutoVectorStore
+from .vectorstore import AutoVectorStore, AutoCondition
 
 
 __all__ = [
@@ -40,5 +40,6 @@ __all__ = [
     "TextSplitter",
     "AutoStorage",
     "AutoVectorStore",
+    "AutoCondition",
 ]
 __version__ = "0.3.0.dev0"
