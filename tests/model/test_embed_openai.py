@@ -1,5 +1,4 @@
 from cardinal.model import EmbedOpenAI
-import pytest
 
 
 def test_embed_openai():

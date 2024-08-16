@@ -1,21 +1,7 @@
 from cardinal.vectorstore import AutoVectorStore, AutoCondition
+from cardinal.vectorstore.schema import Operator
 from pydantic import BaseModel
 from enum import IntEnum
-import os
-import pytest
-
-
-class Operator(IntEnum):
-    Eq = 0
-    Ne = 1
-    Gt = 2
-    Ge = 3
-    Lt = 4
-    Le = 5
-    In = 6
-    Notin = 7
-    And = 8
-    Or = 9
     
 
 class Animal(BaseModel):
@@ -27,7 +13,6 @@ data = [Animal(name=text) for text in texts]
 
 def test_vector_store():
     vectorStore = AutoVectorStore[Animal](name="test")
-    ENV_VECTORSTORE = os.getenv('VECTORSTORE')
     assert(not vectorStore.exists())  # False
     vectorStore.insert(texts=texts, data=data)
     vectorStore.delete(AutoCondition(key="name", value="dog", op=Operator.Eq))
