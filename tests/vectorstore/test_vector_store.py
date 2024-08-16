@@ -30,11 +30,7 @@ def test_vector_store():
     ENV_VECTORSTORE = os.getenv('VECTORSTORE')
     assert(not vectorStore.exists())  # False
     vectorStore.insert(texts=texts, data=data)
-    if ENV_VECTORSTORE == 'milvus':
-        vectorStore._vectorstore.store.flush()
     vectorStore.delete(AutoCondition(key="name", value="dog", op=Operator.Eq))
-    if ENV_VECTORSTORE == 'milvus':
-        vectorStore._vectorstore.store.flush()
     assert(vectorStore.search(query="dog", top_k=2)[0][0] == data[2])
     assert(vectorStore.search(query="dog", top_k=2)[1][0] == data[1])
     # [(Animal(name='puppy'), 0.8510237336158752), (Animal(name='llama'), 1.1970627307891846)]
