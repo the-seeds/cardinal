@@ -2,6 +2,7 @@ from pydantic import BaseModel
 from cardinal.vectorstore import AutoVectorStore
 from cardinal.retriever import DenseRetriever
 
+
 class Animal(BaseModel):
     name: str
 

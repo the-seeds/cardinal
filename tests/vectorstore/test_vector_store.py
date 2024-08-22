@@ -1,9 +1,8 @@
+from pydantic import BaseModel
 from cardinal.vectorstore import AutoVectorStore, AutoCondition
 from cardinal.vectorstore.schema import Operator
-from pydantic import BaseModel
-from enum import IntEnum
-    
 
+    
 class Animal(BaseModel):
     name: str
 

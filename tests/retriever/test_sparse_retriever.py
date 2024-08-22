@@ -1,8 +1,8 @@
+import os
+import pytest
 from pydantic import BaseModel
 from cardinal.storage import AutoStorage
 from cardinal.retriever import SparseRetriever
-import os
-import pytest
 
 
 class Document(BaseModel):
