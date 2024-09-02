@@ -145,3 +145,6 @@ class Chroma(VectorStore[T]):
         client = _get_chroma_client()
         client.delete_collection(self.name)
         self.store = None
+
+    def flush(self) -> None:
+        return None

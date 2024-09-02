@@ -29,12 +29,10 @@ class AutoVectorStore(VectorStore[T]):
         return _get_vectorstore().create(name, texts, data, drop_old)
 
     def insert(self, texts: Sequence[str], data: Sequence[T]) -> None:
-        self._vectorstore.insert(texts, data)
-        return self._flush()
+        return self._vectorstore.insert(texts, data)
 
     def delete(self, condition: "Condition") -> None:
-        self._vectorstore.delete(condition)
-        return self._flush()
+        return self._vectorstore.delete(condition)
 
     def search(
         self, query: str, top_k: Optional[int] = 4, condition: Optional["Condition"] = None
@@ -47,11 +45,8 @@ class AutoVectorStore(VectorStore[T]):
     def destroy(self) -> None:
         return self._vectorstore.destroy()
     
-    def _flush(self) -> None:
-        if isinstance(self._vectorstore, Milvus):
-            return self._vectorstore.store.flush()
-        else:
-            return None
+    def flush(self) -> None:
+        return self._vectorstore.flush()
 
 
 _vectorstores: Dict[str, Type["VectorStore"]] = {}

@@ -177,3 +177,7 @@ class Milvus(VectorStore[T]):
         self._try_init_and_check_exists()
         self.store.drop()
         self.store = None
+
+    def flush(self) -> None:
+        return self.store.flush()
+    
