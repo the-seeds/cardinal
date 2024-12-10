@@ -1,14 +1,20 @@
-import json
-from typing import Generic, Optional, Sequence, TypeVar
+from typing import Optional, Sequence, TypeVar
 from pydantic import BaseModel
-from neo4j import GraphDatabase
+
+from .schema import GraphStorage
+from .config import settings
+from ..utils.import_utils import is_neo4j_available
+
+
+if is_neo4j_available():
+    from neo4j import GraphDatabase
 
 T = TypeVar("T", bound=BaseModel)
 
-class Neo4j(Generic[T]):
+class Neo4j(GraphStorage[T]):
     def __init__(self, name: str) -> None:
         self.name = name
-        self.driver = GraphDatabase.driver("bolt://localhost:7687")
+        self.driver = GraphDatabase.driver(settings.neo4j_uri)
 
     def insert_node(self, key: Sequence[str], node: Sequence[T]) -> None:
         with self.driver.session() as session:

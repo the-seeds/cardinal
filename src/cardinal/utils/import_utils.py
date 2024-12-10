@@ -22,6 +22,10 @@ def is_redis_available():
     return _is_package_available("redis")
 
 
+def is_neo4j_available():
+    return _is_package_available("neo4j")
+
+
 def is_tiktoken_available():
     return _is_package_available("tiktoken")
 
