@@ -33,6 +33,10 @@ SEARCH_TARGET=content
 REDIS_URI=redis://localhost:6379
 ELASTICSEARCH_URI=http://localhost:9001
 
+# graph storage
+GRAPH_STORAGE=neo4j
+NEO4J_URI=bolt://localhost:7687
+
 # vectorstore
 VECTORSTORE=chroma
 CHROMA_PATH=./chroma
