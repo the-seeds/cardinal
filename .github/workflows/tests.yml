@@ -57,6 +57,8 @@ jobs:
       SEARCH_TARGET: content
       REDIS_URI: redis://localhost:6379
       ELASTICSEARCH_URI: http://localhost:9200
+      GRAPH_STORAGE: neo4j
+      NEO4J_URI: bolt://localhost:7687
       VECTORSTORE: chroma
       CHROMA_PATH: ./chroma
       MILVUS_URI: http://localhost:19530
@@ -91,6 +93,14 @@ jobs:
           python -m pip install pytest
           wget https://github.com/milvus-io/milvus/releases/download/v2.4.4/milvus-standalone-docker-compose.yml -O docker-compose.yml
           sudo docker compose up -d
+          docker pull neo4j
+          docker run \
+            --name neo4j \
+            -d \
+            -p 7474:7474 \
+            -p 7687:7687 \
+            -e NEO4J_AUTH=none \
+            neo4j
 
       - name: Test with pytest
         run: |

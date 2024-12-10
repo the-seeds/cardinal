@@ -15,6 +15,7 @@ from .model import ChatOpenAI, EmbedOpenAI, TokenCounter
 from .retriever import DenseRetriever, HybridRetriever, SparseRetriever
 from .splitter import CJKTextSplitter, TextSplitter
 from .storage import AutoStorage
+from .graph import AutoGraphStorage
 from .vectorstore import AutoVectorStore, AutoCondition
 
 
@@ -39,6 +40,7 @@ __all__ = [
     "CJKTextSplitter",
     "TextSplitter",
     "AutoStorage",
+    "AutoGraphStorage",
     "AutoVectorStore",
     "AutoCondition",
 ]
