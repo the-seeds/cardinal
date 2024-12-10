@@ -17,7 +17,6 @@ class Relation(BaseModel):
 
 def test_graph_storage():
     storage = AutoGraphStorage("test_db")
-    storage.destroy()
 
     # 测试节点插入
     entity_keys = ["entity1", "entity2"]
