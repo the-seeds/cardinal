@@ -1,7 +1,21 @@
 from cardinal import AutoGraphStorage
-from RagPanel.utils.graph_utils import Entity, Relation
+from pydantic import BaseModel
 
-def test_neo4j():
+
+class Entity(BaseModel):
+    name: str
+    type: str
+    desc: str
+    
+    
+class Relation(BaseModel):
+    head: str
+    tail: str
+    desc: str
+    strength: int
+
+
+def test_graph_storage():
     storage = AutoGraphStorage("test_db")
     storage.destroy()
 
