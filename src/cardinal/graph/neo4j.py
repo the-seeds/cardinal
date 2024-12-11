@@ -128,13 +128,13 @@ class Neo4j(GraphStorage[T]):
             
     def community_schema(self) -> dict[str, T]:
         results = defaultdict(
-            lambda: dict(
-                level=None,
-                title=None,
-                edges=set(),
-                nodes=set(),
-                sub_communities=[],
-            )
+            lambda: {
+                'level': None,
+                'title': None,
+                'edges': set(),
+                'nodes': set(),
+                'sub_communities':[]
+            }
         )
 
         with self.driver.session() as session:
