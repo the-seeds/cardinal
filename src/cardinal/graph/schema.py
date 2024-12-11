@@ -64,6 +64,27 @@ class GraphStorage(Generic[T], ABC):
             key: the key to the head of queried node.
         """
         ...
+        
+    @abstractmethod
+    def clustering(self) -> None:
+        r"""
+        call clustering algorithm of graph storage.
+        """
+        ...
+
+    @abstractmethod
+    def community_schema(self) -> None:
+        r"""
+        get community info.
+        """
+        ...
+
+    @abstractmethod
+    def drop_community(self) -> None:
+        r"""
+        drop community from memory.
+        """
+        ...
 
     @abstractmethod
     def exists(self) -> bool:

@@ -93,8 +93,15 @@ jobs:
           python -m pip install pytest
           wget https://github.com/milvus-io/milvus/releases/download/v2.4.4/milvus-standalone-docker-compose.yml -O docker-compose.yml
           sudo docker compose up -d
-          docker pull neo4j
-          docker run --name neo4j -d -p 7474:7474 -p 7687:7687 -e NEO4J_AUTH=none neo4j
+          docker run -it --rm \
+            --publish=7474:7474 --publish=7687:7687 \
+            --env NEO4J_AUTH=none \
+            --env NEO4J_PLUGINS='["apoc","graph-data-science"]' \
+            --env NEO4J_dbms_security_procedures_unrestricted=gds.*,apoc.*\
+            --env NEO4J_dbms_security_procedures_allowlist=gds.*,apoc.*\
+            --volume=plugins:/plugins\
+            --volume=data:/data\
+            neo4j:5.11.0
 
       - name: Test with pytest
         run: |

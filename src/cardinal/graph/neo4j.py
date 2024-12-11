@@ -1,5 +1,6 @@
 from typing import Optional, Sequence, TypeVar
 from pydantic import BaseModel
+from collections import defaultdict
 
 from .schema import GraphStorage
 from .config import settings
@@ -83,6 +84,108 @@ class Neo4j(GraphStorage[T]):
             )
             edges = [record["r"] for record in result]
             return edges if edges else None
+    
+    """
+    clustering part reference:
+    - [nano-graphrag](https://github.com/gusye1234/nano-graphrag)
+    """
+    def clustering(self) -> None:
+        max_level = settings.cluster_size
+        with self.driver.session() as session:
+            # Project the graph with undirected relationships
+            session.run(
+                f"""
+                CALL gds.graph.project(
+                    'graph_{self.name}',
+                    ['Node'],
+                    {{
+                        EDGE: {{
+                            orientation: 'UNDIRECTED',
+                            properties: ['strength']
+                        }}
+                    }}
+                )
+                """
+            )
+
+            # Run Leiden algorithm
+            session.run(
+                f"""
+                CALL gds.leiden.write(
+                    'graph_{self.name}',
+                    {{
+                        writeProperty: 'community_id',
+                        includeIntermediateCommunities: True,
+                        relationshipWeightProperty: "strength",
+                        maxLevels: {max_level},
+                        tolerance: 0.0001,
+                        gamma: 1.0,
+                        theta: 0.01
+                    }}
+                )
+                """
+            )
+            
+    def community_schema(self) -> dict[str, T]:
+        results = defaultdict(
+            lambda: dict(
+                level=None,
+                title=None,
+                edges=set(),
+                nodes=set(),
+                sub_communities=[],
+            )
+        )
+
+        with self.driver.session() as session:
+            # Fetch community data
+            result = session.run(
+                f"""
+                MATCH (n:Node)
+                WITH n, n.community_id AS community_id, [(n)-[]-(m:Node) | m.name] AS connected_nodes
+                RETURN n.name AS node_name,
+                       community_id AS cluster_key,
+                       connected_nodes
+                """
+            )
+
+            for record in result:
+                for index, c_id in enumerate(record["cluster_key"]):
+                    node_name = str(record["node_name"])
+                    level = index
+                    cluster_key = str(c_id)
+                    connected_nodes = record["connected_nodes"]
+
+                    results[cluster_key]["level"] = level
+                    results[cluster_key]["title"] = f"Cluster {cluster_key}"
+                    results[cluster_key]["nodes"].add(node_name)
+                    results[cluster_key]["edges"].update(
+                        [
+                            tuple(sorted([node_name, str(connected)]))
+                            for connected in connected_nodes
+                            if connected != node_name
+                        ]
+                    )
+
+            # Process results
+            for k, v in results.items():
+                v["edges"] = [list(e) for e in v["edges"]]
+                v["nodes"] = list(v["nodes"])
+
+            # Compute sub-communities (this is a simplified approach)
+            for cluster in results.values():
+                cluster["sub_communities"] = [
+                    sub_key
+                    for sub_key, sub_cluster in results.items()
+                    if sub_cluster["level"] > cluster["level"]
+                    and set(sub_cluster["nodes"]).issubset(set(cluster["nodes"]))
+                ]
+
+        return dict(results)
+            
+    def drop_community(self):
+        with self.driver.session() as session:
+            session.run(f"CALL gds.graph.drop('graph_{self.name}') YIELD graphName")
 
     def exists(self) -> bool:
         try:

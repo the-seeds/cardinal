@@ -14,12 +14,6 @@ class AutoGraphStorage(GraphStorage[T]):
     def insert_edge(self, head_keys: Sequence[str], tail_keys: Sequence[str], edges: Sequence[T]) -> None:
         return self._graph_storage.insert_edge(head_keys, tail_keys, edges)
 
-    def delete_node(self, key: str) -> None:
-        return self._graph_storage.delete_node(key)
-
-    def delete_edge(self, head_key: str, tail_key: str) -> None:
-        return self._graph_storage.delete_edge(head_key, tail_key)
-
     def query_node(self, key: str) -> Optional[T]:
         return self._graph_storage.query_node(key)
 
@@ -28,7 +22,16 @@ class AutoGraphStorage(GraphStorage[T]):
 
     def query_node_edges(self, key: str) -> Optional[List[T]]:
         return self._graph_storage.query_node_edges(key)
-
+    
+    def clustering(self) -> None:
+        return self._graph_storage.clustering()
+    
+    def community_schema(self) -> dict[str, T]:
+        return self._graph_storage.community_schema()
+    
+    def drop_community(self) -> None:
+        return self._graph_storage.drop_community()
+    
     def exists(self) -> bool:
         return self._graph_storage.exists()
 
