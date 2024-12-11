@@ -35,7 +35,8 @@ class Neo4j(GraphStorage[T]):
                     """
                     MATCH (h:Node {key: $head_key})
                     MATCH (t:Node {key: $tail_key})
-                    CREATE (h)-[r:EDGE $properties]->(t)
+                    MERGE (h)-[r:EDGE]->(t)
+                    SET r += $properties
                     """,
                     head_key=h,
                     tail_key=t,
