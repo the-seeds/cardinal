@@ -60,7 +60,7 @@ class Neo4j(GraphStorage[T]):
         with self.driver.session() as session:
             result = session.run(
                 """
-                MATCH (h:Node {key: $head_key})-[r:EDGE]->(t:Node {key: $tail_key})
+                MATCH (h:Node {key: $head_key})-[r:EDGE]-(t:Node {key: $tail_key})
                 RETURN r
                 """,
                 head_key=head_key,

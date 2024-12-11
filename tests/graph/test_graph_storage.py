@@ -45,8 +45,8 @@ def test_graph_storage():
     ]
     storage.insert_edge(relation_keys_head, relation_keys_tail, relations)
 
-    # 查询边
-    relation = storage.query_edge("entity1", "entity2")
+    # 无向查询边
+    relation = storage.query_edge("entity2", "entity1")
     assert relation is not None, "Relation from entity1 to entity2 should exist"
     assert relation["desc"] == "Connected" and relation["strength"] == 1
 
