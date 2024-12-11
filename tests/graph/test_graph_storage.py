@@ -41,15 +41,13 @@ def test_graph_storage():
     relation_keys_head = ["entity1"]
     relation_keys_tail = ["entity2"]
     relations = [
-        Relation(head="entity1", tail="entity2", desc="Connected", strength=1).model_dump_json()
+        Relation(head="entity1", tail="entity2", desc="Connected", strength=1)
     ]
     storage.insert_edge(relation_keys_head, relation_keys_tail, relations)
 
     # 查询边
     relation = storage.query_edge("entity1", "entity2")
     assert relation is not None, "Relation from entity1 to entity2 should exist"
-    import json
-    relation = json.loads(relation["properties"])
     assert relation["desc"] == "Connected" and relation["strength"] == 1
 
     # 查询节点的所有出边

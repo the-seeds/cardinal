@@ -35,11 +35,11 @@ class Neo4j(GraphStorage[T]):
                     """
                     MATCH (h:Node {key: $head_key})
                     MATCH (t:Node {key: $tail_key})
-                    MERGE (h)-[r:EDGE {properties: $properties}]->(t)
+                    CREATE (h)-[r:EDGE $properties]->(t)
                     """,
                     head_key=h,
                     tail_key=t,
-                    properties=e,
+                    properties=e.model_dump(),
                 )
 
     def query_node(self, key: str) -> Optional[T]:
