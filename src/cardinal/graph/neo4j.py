@@ -90,7 +90,7 @@ class Neo4j(GraphStorage[T]):
     - [nano-graphrag](https://github.com/gusye1234/nano-graphrag)
     """
     def clustering(self) -> None:
-        max_level = settings.cluster_size
+        max_level = settings.cluster_level
         with self.driver.session() as session:
             # Project the graph with undirected relationships
             session.run(
