@@ -13,13 +13,15 @@ if is_elasticsearch_available():
 
 
 class ElasticsearchStorage(Storage[T]):
-    def __init__(self, name: str) -> None:
+    def __init__(self, name: str, elasticsearch_uri: str=None, search_target: str=None) -> None:
+        elasticsearch_uri = elasticsearch_uri if elasticsearch_uri else settings.elasticsearch_uri
+        search_target = search_target if search_target else settings.search_target
         self.name = name
-        self.database = Elasticsearch(hosts=[settings.elasticsearch_uri], max_retries=3, request_timeout=30.0)
+        self.database = Elasticsearch(hosts=[elasticsearch_uri], max_retries=3, request_timeout=30.0)
         self.searchable = True
         self._unique_key = "_unique_key"
         self._batch_size = 1000
-        self._search_target = settings.search_target
+        self._search_target = search_target
 
         try:
             self.database.ping()

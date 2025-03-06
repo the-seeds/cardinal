@@ -43,8 +43,10 @@ class MilvusCondition(Condition):
 
 
 class Milvus(VectorStore[T]):
-    def __init__(self, name: str) -> None:
+    def __init__(self, name: str, milvus_uri: str=None, milvus_token: str=None) -> None:
         self.name = name
+        self.milvus_uri = milvus_uri if milvus_uri else settings.milvus_uri
+        self.milvus_token = milvus_token if milvus_token else settings.milvus_token
         self.store: Optional["Collection"] = None
         self._fields: List[str] = []
         self._alias = "default"
@@ -58,7 +60,7 @@ class Milvus(VectorStore[T]):
 
     def _check_connection(self, conn: "Connections") -> None:
         if not conn.has_connection(self._alias):
-            conn.connect(alias=self._alias, uri=settings.milvus_uri, token=settings.milvus_token)
+            conn.connect(alias=self._alias, uri=self.milvus_uri, token=self.milvus_token)
 
     def _create_collection(self, embedding: Sequence[float], example: T) -> None:
         fields = [

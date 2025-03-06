@@ -44,35 +44,35 @@ class ChromaCondition(Condition):
             return {self._key: {self._op: self._value}}
 
 
-def _get_chroma_client() -> "ClientAPI":
-    client = Client(Settings(is_persistent=True, persist_directory=settings.chroma_path))
-    try:
-        client.heartbeat()
-    except Exception:
-        raise Exception("Unable to connect with the Chroma client.")
-
-    return client
-
-
 class Chroma(VectorStore[T]):
-    def __init__(self, name: str) -> None:
+    def __init__(self, name: str, chroma_path: str=None) -> None:
         self.name = name
+        self.chroma_path = chroma_path if chroma_path else settings.chroma_path
         self.store = None
         self._batch_size = 1000
         self._vectorizer = EmbedOpenAI(batch_size=self._batch_size)
         self._data_field = "_data"
 
     def _init(self) -> None:
-        client = _get_chroma_client()
+        client = self._get_chroma_client()
         self.store = client.get_or_create_collection(self.name, embedding_function=None)
 
     def _try_init_and_check_exists(self) -> None:
         if self.store is None:
-            client = _get_chroma_client()
+            client = self._get_chroma_client()
             try:
                 self.store = client.get_collection(self.name, embedding_function=None)
             except ValueError:
                 raise ValueError("Index {} does not exist.".format(self.name))
+    
+    def _get_chroma_client(self) -> "ClientAPI":
+        client = Client(Settings(is_persistent=True, persist_directory=self.chroma_path))
+        try:
+            client.heartbeat()
+        except Exception:
+            raise Exception("Unable to connect with the Chroma client.")
+
+        return client
 
     @classmethod
     def create(cls, name: str, texts: Sequence[str], data: Sequence[T], drop_old: Optional[bool] = False) -> Self:
@@ -142,7 +142,7 @@ class Chroma(VectorStore[T]):
 
     def destroy(self) -> None:
         self._try_init_and_check_exists()
-        client = _get_chroma_client()
+        client = self._get_chroma_client()
         client.delete_collection(self.name)
         self.store = None
 

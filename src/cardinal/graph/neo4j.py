@@ -13,9 +13,11 @@ if is_neo4j_available():
 T = TypeVar("T", bound=BaseModel)
 
 class Neo4j(GraphStorage[T]):
-    def __init__(self, name: str) -> None:
+    def __init__(self, name: str, neo4j_uri: str=None, cluster_level: int=None) -> None:
         self.name = name
-        self.driver = GraphDatabase.driver(settings.neo4j_uri)
+        self.neo4j_uri = neo4j_uri if neo4j_uri else settings.neo4j_uri
+        self.cluster_level = cluster_level if cluster_level else settings.cluster_level
+        self.driver = GraphDatabase.driver(self.neo4j_uri)
 
     def insert_node(self, key: Sequence[str], node: Sequence[T]) -> None:
         with self.driver.session() as session:
@@ -90,7 +92,7 @@ class Neo4j(GraphStorage[T]):
     - [nano-graphrag](https://github.com/gusye1234/nano-graphrag)
     """
     def clustering(self) -> None:
-        max_level = settings.cluster_level
+        max_level = self.cluster_level
         with self.driver.session() as session:
             # Project the graph with undirected relationships
             session.run(

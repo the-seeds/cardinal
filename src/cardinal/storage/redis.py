@@ -12,9 +12,10 @@ if is_redis_available():
 
 
 class RedisStorage(Storage[T]):
-    def __init__(self, name: str) -> None:
+    def __init__(self, name: str, redis_uri: str=None) -> None:
+        redis_uri = redis_uri if redis_uri else settings.redis_uri
         self.name = name
-        self.database = Redis.from_url(url=settings.redis_uri)
+        self.database = Redis.from_url(url=redis_uri)
         self.searchable = False
         self._unique_key = "_unique_key"
 
