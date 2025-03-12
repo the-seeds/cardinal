@@ -9,6 +9,7 @@ class Config:
     chroma_path: Optional[str]
     milvus_uri: Optional[str]
     milvus_token: Optional[str]
+    elasticsearch_uri: Optional[str]
 
 
 settings = Config(
@@ -16,4 +17,5 @@ settings = Config(
     chroma_path=os.environ.get("CHROMA_PATH"),
     milvus_uri=os.environ.get("MILVUS_URI"),
     milvus_token=os.environ.get("MILVUS_TOKEN"),
+    elasticsearch_uri=os.environ.get("ELASTICSEARCH_URI"),
 )
