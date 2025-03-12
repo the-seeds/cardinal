@@ -12,7 +12,7 @@ from .common import (
 )
 from .logging import get_logger
 from .model import ChatOpenAI, EmbedOpenAI, TokenCounter
-from .retriever import DenseRetriever, HybridRetriever, SparseRetriever
+from .retriever import DenseRetriever, HybridRetriever, SparseRetriever, MultiRetriever
 from .splitter import CJKTextSplitter, TextSplitter
 from .storage import AutoStorage
 from .graph import AutoGraphStorage
@@ -35,6 +35,7 @@ __all__ = [
     "EmbedOpenAI",
     "TokenCounter",
     "DenseRetriever",
+    "MultiRetriever",
     "HybridRetriever",
     "SparseRetriever",
     "CJKTextSplitter",
