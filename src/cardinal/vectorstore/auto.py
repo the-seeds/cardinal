@@ -4,7 +4,7 @@ from typing_extensions import Self
 
 from .chroma import Chroma, ChromaCondition
 from .config import settings
-from .elasticsearch import Elasticsearch, ElasticsearchCondition
+from .elasticsearch import Elasticsearch, ESCondition
 from .milvus import Milvus, MilvusCondition
 from .schema import Condition, T, VectorStore
 
@@ -79,4 +79,4 @@ def _get_vectorstore() -> Type["VectorStore"]:
 
 _add_vectorstore("chroma", Chroma, ChromaCondition)
 _add_vectorstore("milvus", Milvus, MilvusCondition)
-_add_vectorstore("elasticsearch", Elasticsearch, ElasticsearchCondition)
+_add_vectorstore("elasticsearch", Elasticsearch, ESCondition)

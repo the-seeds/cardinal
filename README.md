@@ -21,6 +21,7 @@ OPENAI_API_KEY=0
 # models
 DEFAULT_EMBED_MODEL=text-embedding-ada-002
 DEFAULT_CHAT_MODEL=gpt-3.5-turbo
+DEFAULT_RERANKER=bge-reranker-v2-m3 # empty if not needed
 HF_TOKENIZER_PATH=01-ai/Yi-6B-Chat
 
 # text splitter

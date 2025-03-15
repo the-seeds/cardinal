@@ -18,15 +18,13 @@ class APIReranker(Reranker):
             api_key: API密钥
         """
         self.model = settings.reranker
-        if not self.model:
-            raise ValueError("No reranker model specified. Please set RERANKER in environment variables.")
-
-        self._client = OpenAI(
-            api_key=api_key if api_key else settings.reranker_api_key,
-            base_url=api_base if api_base else settings.reranker_api_base,
-            max_retries=5,
-            timeout=30.0
-        )
+        if self.model is not None and self.model.lower() != "none":
+            self._client = OpenAI(
+                api_key=api_key if api_key else settings.reranker_api_key,
+                base_url=api_base if api_base else settings.reranker_api_base,
+                max_retries=5,
+                timeout=30.0
+            )
 
     @retry(wait=wait_random_exponential(min=1, max=60), stop=stop_after_attempt(5))
     def score(self, query: str, doc: str) -> float:

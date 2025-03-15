@@ -12,7 +12,7 @@ class Config:
 
 
 settings = Config(
-    reranker=os.environ.get("RERANKER"),
+    reranker=os.environ.get("DEFAULT_RERANKER"),
     reranker_api_base=os.environ.get("OPENAI_BASE_URL"),
     reranker_api_key=os.environ.get("OPENAI_API_KEY"),
     reranker_batch_size=int(os.environ.get("RERANKER_BATCH_SIZE", "32")),
